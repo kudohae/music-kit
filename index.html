@@ -11,305 +11,105 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.2s, color 0.2s, border-color 0.2s; }
 
   :root {
-    --bg: #0e0e0e;
-    --surface: #161616;
-    --surface2: #1e1e1e;
-    --border: #2a2a2a;
-    --accent: #c8f05a;
-    --accent-dim: #8aaa2a;
-    --text: #f0f0f0;
-    --text-muted: #666;
-    --text-dim: #999;
-    --mono: 'Space Mono', monospace;
-    --serif: 'Instrument Serif', serif;
+    --bg: #0e0e0e; --surface: #161616; --surface2: #1e1e1e; --border: #2a2a2a;
+    --accent: #c8f05a; --text: #f0f0f0; --text-muted: #666; --text-dim: #999;
+    --mono: 'Space Mono', monospace; --serif: 'Instrument Serif', serif;
   }
-
   :root.light {
-    --bg: #f5f4f0;
-    --surface: #eceae4;
-    --surface2: #e2e0d8;
-    --border: #ccc9be;
-    --accent: #5a8a00;
-    --accent-dim: #3d6200;
-    --text: #1a1a1a;
-    --text-muted: #888;
-    --text-dim: #555;
+    --bg: #f5f4f0; --surface: #eceae4; --surface2: #e2e0d8; --border: #ccc9be;
+    --accent: #5a8a00; --text: #1a1a1a; --text-muted: #888; --text-dim: #555;
   }
 
-  html, body {
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 14px;
-    overflow: hidden;
-  }
-
-  /* Layout */
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 14px; overflow: hidden; }
   #app { display: flex; flex-direction: column; height: 100vh; }
 
-  /* Header */
-  #header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    flex-shrink: 0;
-  }
+  #header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; }
+  #logo { font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--accent); flex-shrink: 0; }
 
-  #logo {
-    font-family: var(--serif);
-    font-style: italic;
-    font-size: 22px;
-    color: var(--accent);
-    letter-spacing: -0.02em;
-    flex-shrink: 0;
-  }
-
-  #file-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 14px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-dim);
-    transition: border-color 0.15s, color 0.15s;
-    flex-shrink: 0;
-  }
+  #file-label { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-family: var(--mono); font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
   #file-label:hover { border-color: var(--accent); color: var(--accent); }
-  #file-label svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
+  #file-label svg { width: 12px; height: 12px; stroke: currentColor; fill: none; }
   #file-input { display: none; }
-
-  #file-name {
-    font-size: 12px;
-    color: var(--text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 240px;
-    flex: 1;
-  }
-
+  #file-name { font-size: 11px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; }
   .spacer { flex: 1; }
 
-  /* Controls */
-  #controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-  }
-
-  .ctrl-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 12px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: transparent;
-    color: var(--text-dim);
-    font-family: var(--mono);
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .ctrl-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
+  .ctrl-btn { display: flex; align-items: center; gap: 5px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--text-dim); font-family: var(--mono); font-size: 11px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .ctrl-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
   .ctrl-btn:hover { border-color: var(--accent); color: var(--accent); }
   .ctrl-btn:disabled { opacity: 0.3; cursor: not-allowed; }
   .ctrl-btn:disabled:hover { border-color: var(--border); color: var(--text-dim); }
+  .ctrl-btn.on { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .ctrl-btn.accent-btn { border-color: var(--accent); color: var(--accent); }
+  .ctrl-btn.accent-btn:hover { background: var(--accent); color: #000; }
 
-  .ctrl-btn.accent-btn {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-  .ctrl-btn.accent-btn:hover {
-    background: var(--accent);
-    color: #000;
-  }
+  #zoom-range { width: 70px; accent-color: var(--accent); }
+  #zoom-val { font-size: 11px; color: var(--text-muted); min-width: 30px; }
 
-  /* Track selector */
-  #track-select {
-    padding: 7px 10px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: var(--surface);
-    color: var(--text-dim);
-    font-family: var(--mono);
-    font-size: 11px;
-    cursor: pointer;
-    outline: none;
-    max-width: 160px;
-  }
-  #track-select:focus { border-color: var(--accent); }
+  #main { display: flex; flex: 1; overflow: hidden; }
 
-  /* Zoom */
-  #zoom-range {
-    width: 80px;
-    accent-color: var(--accent);
-  }
-  #zoom-val { font-size: 11px; color: var(--text-muted); min-width: 32px; }
-
-  /* Main area */
-  #main {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
-
-  /* Sidebar */
-  #sidebar {
-    width: 200px;
-    flex-shrink: 0;
-    border-right: 1px solid var(--border);
-    background: var(--surface);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  #sidebar-header {
-    padding: 12px 14px 8px;
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border);
-    text-transform: uppercase;
-  }
-
-  #track-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px 0;
-  }
-  #track-list::-webkit-scrollbar { width: 4px; }
-  #track-list::-webkit-scrollbar-track { background: transparent; }
+  #sidebar { width: 188px; flex-shrink: 0; border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
+  #sidebar-header { padding: 10px 12px 7px; font-size: 10px; letter-spacing: 0.12em; color: var(--text-muted); border-bottom: 1px solid var(--border); text-transform: uppercase; }
+  #track-list { flex: 1; overflow-y: auto; padding: 5px 0; }
+  #track-list::-webkit-scrollbar { width: 3px; }
   #track-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  .track-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 14px;
-    cursor: pointer;
-    transition: background 0.1s;
-    border-left: 2px solid transparent;
-  }
+  .track-item { display: flex; align-items: center; gap: 8px; padding: 7px 12px; cursor: pointer; border-left: 2px solid transparent; }
   .track-item:hover { background: var(--surface2); }
   .track-item.active { border-left-color: var(--accent); background: var(--surface2); }
-
-  .track-num {
-    font-size: 10px;
-    color: var(--text-muted);
-    min-width: 16px;
-  }
-  .track-name {
-    font-size: 12px;
-    color: var(--text-dim);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  .track-num { font-size: 10px; color: var(--text-muted); min-width: 14px; }
+  .track-name { font-size: 11px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .track-item.active .track-name { color: var(--accent); }
 
-  /* Score area */
-  #score-wrap {
-    flex: 1;
-    overflow: auto;
-    background: var(--bg);
-    position: relative;
-  }
-  #score-wrap::-webkit-scrollbar { width: 6px; height: 6px; }
-  #score-wrap::-webkit-scrollbar-track { background: transparent; }
+  #score-wrap { flex: 1; overflow: auto; background: var(--bg); position: relative; }
+  #score-wrap::-webkit-scrollbar { width: 5px; height: 5px; }
   #score-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  #at-main { padding: 24px 48px 24px 24px; min-height: 100%; }
 
-  #at-main {
-    padding: 24px 48px 24px 24px;
-    min-height: 100%;
-  }
-
-  /* Drop zone / empty state */
-  #drop-zone {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    color: var(--text-muted);
-    pointer-events: none;
-  }
+  #drop-zone { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; pointer-events: none; }
   #drop-zone.hidden { display: none; }
+  #drop-icon { width: 60px; height: 60px; border: 1px dashed var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  #drop-icon svg { width: 26px; height: 26px; stroke: var(--border); fill: none; }
+  #drop-text { font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--text-muted); }
+  #drop-sub { font-size: 10px; color: var(--border); letter-spacing: 0.06em; }
 
-  #drop-icon {
-    width: 64px;
-    height: 64px;
-    border: 1px dashed var(--border);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  #drop-icon svg { width: 28px; height: 28px; stroke: var(--border); fill: none; }
-
-  #drop-text { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--text-muted); }
-  #drop-sub { font-size: 11px; color: var(--border); letter-spacing: 0.06em; }
-
-  /* Loading */
-  #loading {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-    gap: 10px;
-    font-size: 12px;
-    color: var(--text-muted);
-  }
+  #loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--bg); gap: 10px; font-size: 12px; color: var(--text-muted); z-index: 10; }
   #loading.hidden { display: none; }
-  .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
+  .spinner { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Song info bar */
-  #info-bar {
-    padding: 8px 20px;
-    border-top: 1px solid var(--border);
-    background: var(--surface);
-    display: flex;
-    gap: 24px;
-    align-items: center;
-    flex-shrink: 0;
-    font-size: 11px;
-  }
-  .info-item { display: flex; gap: 6px; align-items: center; }
-  .info-key { color: var(--text-muted); }
-  .info-val { color: var(--text-dim); }
-  #info-bar.hidden { display: none; }
+  /* ── Player bar ── */
+  #player-bar { display: flex; align-items: center; gap: 10px; padding: 8px 16px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+  #player-bar.hidden { display: none; }
 
-  /* Print styles — A4 */
+  .play-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .play-btn svg { width: 13px; height: 13px; }
+  .play-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .play-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .play-btn:disabled:hover { border-color: var(--border); color: var(--text-dim); }
+
+  #play-pause-btn { width: 38px; height: 38px; border-color: var(--accent); color: var(--accent); }
+  #play-pause-btn:not(:disabled):hover { background: var(--accent); color: #000; }
+  #play-pause-btn svg { width: 16px; height: 16px; }
+
+  #progress-wrap { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  #progress-bar-bg { width: 100%; height: 4px; background: var(--border); border-radius: 2px; cursor: pointer; position: relative; }
+  #progress-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; pointer-events: none; transition: width 0.1s linear; }
+  #time-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); }
+  #sf-status { font-size: 10px; color: var(--text-muted); }
+
+  #tempo-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  #tempo-label { font-size: 10px; color: var(--text-muted); }
+  #tempo-range { width: 60px; accent-color: var(--accent); }
+  #tempo-val { font-size: 10px; color: var(--text-dim); min-width: 34px; }
+
+  #info-bar { padding: 5px 16px; border-top: 1px solid var(--border); background: var(--surface); display: flex; gap: 18px; align-items: center; flex-shrink: 0; font-size: 10px; }
+  #info-bar.hidden { display: none; }
+  .info-key { color: var(--text-muted); }
+  .info-val { color: var(--text-dim); margin-left: 3px; }
+
   @media print {
     @page { size: A4 portrait; margin: 10mm; }
-    #header, #sidebar, #info-bar, #drop-zone, #loading { display: none !important; }
-    html, body {
-      overflow: visible !important;
-      height: auto !important;
-      background: #fff !important;
-    }
+    #header, #sidebar, #info-bar, #player-bar, #drop-zone, #loading { display: none !important; }
+    html, body { overflow: visible !important; height: auto !important; background: #fff !important; }
     #app, #main { display: block !important; height: auto !important; overflow: visible !important; }
     #score-wrap { overflow: visible !important; height: auto !important; position: static !important; }
     #at-main { padding: 0 !important; overflow: visible !important; }
@@ -318,42 +118,32 @@
     svg line, svg path, svg polyline, svg polygon, svg rect { stroke: #000 !important; }
     .at-surface { background: #fff !important; }
   }
-
-  /* AlphaTab overrides for dark bg */
-  .at-surface { background: transparent !important; }
-  .at-surface svg text { fill: var(--text) !important; }
 </style>
 </head>
 <body>
 <div id="app">
+
   <div id="header">
     <div id="logo">GP Viewer</div>
-
     <label id="file-label" for="file-input">
       <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       파일 열기
     </label>
     <input type="file" id="file-input" accept=".gp,.gp3,.gp4,.gp5,.gpx,.gp7">
     <span id="file-name">파일을 선택하세요</span>
-
     <div class="spacer"></div>
-
-    <div id="controls">
-      <label style="font-size:11px;color:var(--text-muted)">zoom</label>
-      <input type="range" id="zoom-range" min="50" max="200" value="100" step="10">
-      <span id="zoom-val">100%</span>
-
-      <button class="ctrl-btn" id="theme-btn" title="라이트/다크 모드 전환">
-        <svg id="theme-icon-moon" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <svg id="theme-icon-sun" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor" style="display:none"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span id="theme-label">라이트</span>
-      </button>
-
-      <button class="ctrl-btn accent-btn" id="print-btn" disabled>
-        <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        PDF 인쇄
-      </button>
-    </div>
+    <label style="font-size:10px;color:var(--text-muted)">zoom</label>
+    <input type="range" id="zoom-range" min="50" max="200" value="100" step="10">
+    <span id="zoom-val">100%</span>
+    <button class="ctrl-btn" id="theme-btn">
+      <svg id="theme-icon-moon" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg id="theme-icon-sun" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor" style="display:none"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="theme-label">라이트</span>
+    </button>
+    <button class="ctrl-btn accent-btn" id="print-btn" disabled>
+      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      PDF 인쇄
+    </button>
   </div>
 
   <div id="main">
@@ -361,7 +151,6 @@
       <div id="sidebar-header">트랙</div>
       <div id="track-list"></div>
     </div>
-
     <div id="score-wrap">
       <div id="at-main"></div>
       <div id="drop-zone">
@@ -378,46 +167,116 @@
     </div>
   </div>
 
+  <!-- Player bar -->
+  <div id="player-bar" class="hidden">
+    <button class="play-btn" id="stop-btn" title="정지" disabled>
+      <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1.5" fill="currentColor"/></svg>
+    </button>
+    <button class="play-btn" id="play-pause-btn" title="재생/일시정지" disabled>
+      <svg id="icon-play" viewBox="0 0 24 24"><path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" fill="currentColor"/></svg>
+      <svg id="icon-pause" viewBox="0 0 24 24" style="display:none"><path d="M15.75 5.25v13.5m-7.5-13.5v13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+
+    <div id="progress-wrap">
+      <div id="progress-bar-bg">
+        <div id="progress-bar-fill"></div>
+      </div>
+      <div id="time-row">
+        <span id="time-cur">0:00</span>
+        <span id="sf-status">SoundFont 로딩 중...</span>
+        <span id="time-total">0:00</span>
+      </div>
+    </div>
+
+    <button class="ctrl-btn" id="loop-btn" title="반복 재생" disabled>
+      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      반복
+    </button>
+
+    <div id="tempo-wrap">
+      <span id="tempo-label">템포</span>
+      <input type="range" id="tempo-range" min="25" max="200" value="100" step="5">
+      <span id="tempo-val">100%</span>
+    </div>
+  </div>
+
   <div id="info-bar" class="hidden">
-    <div class="info-item"><span class="info-key">제목</span><span class="info-val" id="i-title">—</span></div>
-    <div class="info-item"><span class="info-key">아티스트</span><span class="info-val" id="i-artist">—</span></div>
-    <div class="info-item"><span class="info-key">앨범</span><span class="info-val" id="i-album">—</span></div>
-    <div class="info-item"><span class="info-key">트랙 수</span><span class="info-val" id="i-tracks">—</span></div>
-    <div class="info-item"><span class="info-key">마디 수</span><span class="info-val" id="i-bars">—</span></div>
+    <span class="info-key">제목</span><span class="info-val" id="i-title">—</span>
+    <span class="info-key">아티스트</span><span class="info-val" id="i-artist">—</span>
+    <span class="info-key">앨범</span><span class="info-val" id="i-album">—</span>
+    <span class="info-key">트랙 수</span><span class="info-val" id="i-tracks">—</span>
+    <span class="info-key">마디 수</span><span class="info-val" id="i-bars">—</span>
   </div>
 </div>
 
 <script>
-const fileInput = document.getElementById('file-input');
-const fileName = document.getElementById('file-name');
-const dropZone = document.getElementById('drop-zone');
-const loading = document.getElementById('loading');
-const printBtn = document.getElementById('print-btn');
-const trackList = document.getElementById('track-list');
-const infoBar = document.getElementById('info-bar');
-const zoomRange = document.getElementById('zoom-range');
-const zoomVal = document.getElementById('zoom-val');
-const scoreWrap = document.getElementById('score-wrap');
+const fileInput    = document.getElementById('file-input');
+const fileNameEl   = document.getElementById('file-name');
+const dropZone     = document.getElementById('drop-zone');
+const loadingEl    = document.getElementById('loading');
+const printBtn     = document.getElementById('print-btn');
+const trackList    = document.getElementById('track-list');
+const infoBar      = document.getElementById('info-bar');
+const zoomRange    = document.getElementById('zoom-range');
+const zoomVal      = document.getElementById('zoom-val');
+const scoreWrap    = document.getElementById('score-wrap');
+const playerBar    = document.getElementById('player-bar');
+const playPauseBtn = document.getElementById('play-pause-btn');
+const stopBtn      = document.getElementById('stop-btn');
+const loopBtn      = document.getElementById('loop-btn');
+const iconPlay     = document.getElementById('icon-play');
+const iconPause    = document.getElementById('icon-pause');
+const progressBg   = document.getElementById('progress-bar-bg');
+const progressFill = document.getElementById('progress-bar-fill');
+const timeCur      = document.getElementById('time-cur');
+const timeTotal    = document.getElementById('time-total');
+const sfStatus     = document.getElementById('sf-status');
+const tempoRange   = document.getElementById('tempo-range');
+const tempoVal     = document.getElementById('tempo-val');
+const themeBtn     = document.getElementById('theme-btn');
+const iconMoon     = document.getElementById('theme-icon-moon');
+const iconSun      = document.getElementById('theme-icon-sun');
+const themeLabel   = document.getElementById('theme-label');
 
 let api = null;
 let score = null;
-let activeTrackIdx = 0;
+let isPlaying = false;
+let sfReady = false;
+let loopOn = false;
+let totalMs = 0;
+let isLight = false;
+
+function fmtTime(ms) {
+  const s = Math.floor(ms / 1000);
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+}
+function setPlayIcon(playing) {
+  iconPlay.style.display  = playing ? 'none' : '';
+  iconPause.style.display = playing ? '' : 'none';
+}
+function setPlayerBtnsEnabled(en) {
+  playPauseBtn.disabled = !en || !sfReady;
+  stopBtn.disabled = true;
+  loopBtn.disabled = !en;
+}
 
 function initAlphaTab() {
   const settings = {
     core: { engine: 'svg', logLevel: 0 },
-    display: {
-      layoutMode: alphaTab.LayoutMode.Page,
-      scale: 1.0,
-      stretchForce: 1.0,
-      pageSize: alphaTab.PageSize ? alphaTab.PageSize.A4 : undefined,
-    },
+    display: { layoutMode: alphaTab.LayoutMode.Page, scale: 1.0, stretchForce: 1.0 },
     notation: {
       elements: new Map([
         [alphaTab.NotationElement.ScoreTitle, true],
         [alphaTab.NotationElement.ScoreArtist, true],
         [alphaTab.NotationElement.ScoreAlbum, true],
       ])
+    },
+    player: {
+      enablePlayer: true,
+      enableCursor: true,
+      enableUserInteraction: true,
+      soundFont: 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/soundfont/sonivox.sf2',
+      scrollElement: scoreWrap,
     }
   };
 
@@ -428,20 +287,51 @@ function initAlphaTab() {
     renderTrackList(s);
     updateInfoBar(s);
     printBtn.disabled = false;
-    loading.classList.add('hidden');
+    loadingEl.classList.add('hidden');
     dropZone.classList.add('hidden');
+    playerBar.classList.remove('hidden');
+    setPlayerBtnsEnabled(true);
   });
 
-  api.renderStarted.on(() => {
-    loading.classList.remove('hidden');
+  api.renderStarted.on(() => loadingEl.classList.remove('hidden'));
+  api.renderFinished.on(() => loadingEl.classList.add('hidden'));
+
+  api.soundFontLoaded.on(() => {
+    sfReady = true;
+    sfStatus.textContent = '';
+    if (score) playPauseBtn.disabled = false;
+  });
+  api.soundFontLoadFailed.on(() => {
+    sfStatus.textContent = '⚠ SoundFont 로드 실패';
   });
 
-  api.renderFinished.on(() => {
-    loading.classList.add('hidden');
+  api.playerStateChanged.on(e => {
+    const PlayerState = alphaTab.synth.PlayerState;
+    isPlaying = e.state === PlayerState.Playing;
+    setPlayIcon(isPlaying);
+    stopBtn.disabled = (e.state === PlayerState.Stopped);
+  });
+
+  api.playerPositionChanged.on(e => {
+    const tot = e.endTime > 0 ? e.endTime : totalMs;
+    if (tot > 0) {
+      progressFill.style.width = Math.min(100, (e.currentTime / tot) * 100) + '%';
+      timeCur.textContent   = fmtTime(e.currentTime);
+      timeTotal.textContent = fmtTime(tot);
+      totalMs = tot;
+    }
+  });
+
+  api.playerFinished.on(() => {
+    isPlaying = false;
+    setPlayIcon(false);
+    progressFill.style.width = '0%';
+    timeCur.textContent = '0:00';
+    stopBtn.disabled = true;
   });
 
   api.error.on(err => {
-    loading.classList.add('hidden');
+    loadingEl.classList.add('hidden');
     alert('파일을 불러오지 못했습니다: ' + (err.message || err));
   });
 }
@@ -451,11 +341,10 @@ function renderTrackList(s) {
   s.tracks.forEach((track, i) => {
     const item = document.createElement('div');
     item.className = 'track-item' + (i === 0 ? ' active' : '');
-    item.innerHTML = `<span class="track-num">${i + 1}</span><span class="track-name">${track.name || '트랙 ' + (i+1)}</span>`;
+    item.innerHTML = `<span class="track-num">${i + 1}</span><span class="track-name">${track.name || '트랙 ' + (i + 1)}</span>`;
     item.addEventListener('click', () => {
       document.querySelectorAll('.track-item').forEach(el => el.classList.remove('active'));
       item.classList.add('active');
-      activeTrackIdx = i;
       api.renderTracks([s.tracks[i]]);
     });
     trackList.appendChild(item);
@@ -463,119 +352,120 @@ function renderTrackList(s) {
 }
 
 function updateInfoBar(s) {
-  document.getElementById('i-title').textContent = s.title || '—';
+  document.getElementById('i-title').textContent  = s.title  || '—';
   document.getElementById('i-artist').textContent = s.artist || '—';
-  document.getElementById('i-album').textContent = s.album || '—';
+  document.getElementById('i-album').textContent  = s.album  || '—';
   document.getElementById('i-tracks').textContent = s.tracks.length;
-  document.getElementById('i-bars').textContent = s.masterBars.length;
+  document.getElementById('i-bars').textContent   = s.masterBars.length;
   infoBar.classList.remove('hidden');
 }
 
 function loadFile(file) {
   if (!api) initAlphaTab();
-  fileName.textContent = file.name;
+  fileNameEl.textContent = file.name;
   dropZone.classList.add('hidden');
-  loading.classList.remove('hidden');
+  loadingEl.classList.remove('hidden');
   printBtn.disabled = true;
-
+  setPlayerBtnsEnabled(false);
+  progressFill.style.width = '0%';
+  timeCur.textContent = '0:00';
+  timeTotal.textContent = '0:00';
+  sfStatus.textContent = sfReady ? '' : 'SoundFont 로딩 중...';
   const reader = new FileReader();
-  reader.onload = e => {
-    const data = new Uint8Array(e.target.result);
-    api.load(data);
-  };
+  reader.onload = e => api.load(new Uint8Array(e.target.result));
   reader.readAsArrayBuffer(file);
 }
 
-fileInput.addEventListener('change', e => {
-  if (e.target.files[0]) loadFile(e.target.files[0]);
+fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+scoreWrap.addEventListener('dragover', e => e.preventDefault());
+scoreWrap.addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+
+// Play / Pause
+playPauseBtn.addEventListener('click', () => {
+  if (!api) return;
+  if (isPlaying) api.pausePlayer();
+  else api.playPause();
 });
 
-// Drag & drop onto score area
-scoreWrap.addEventListener('dragover', e => { e.preventDefault(); });
-scoreWrap.addEventListener('drop', e => {
-  e.preventDefault();
-  const file = e.dataTransfer.files[0];
-  if (file) loadFile(file);
+// Stop
+stopBtn.addEventListener('click', () => {
+  if (!api) return;
+  api.stop();
+  isPlaying = false;
+  setPlayIcon(false);
+  progressFill.style.width = '0%';
+  timeCur.textContent = '0:00';
+  stopBtn.disabled = true;
+});
+
+// Loop
+loopBtn.addEventListener('click', () => {
+  if (!api) return;
+  loopOn = !loopOn;
+  try { api.isLooping = loopOn; } catch(e) {}
+  loopBtn.classList.toggle('on', loopOn);
+});
+
+// Seek
+progressBg.addEventListener('click', e => {
+  if (!api || !score || totalMs === 0) return;
+  const ratio = (e.clientX - progressBg.getBoundingClientRect().left) / progressBg.offsetWidth;
+  api.tickPosition = Math.floor(ratio * api.score.masterBars.length * 3840);
+});
+
+// Tempo
+tempoRange.addEventListener('input', () => {
+  const v = parseInt(tempoRange.value);
+  tempoVal.textContent = v + '%';
+  if (api) { try { api.playbackSpeed = v / 100; } catch(e) {} }
 });
 
 // Zoom
 zoomRange.addEventListener('input', () => {
   const v = parseInt(zoomRange.value);
   zoomVal.textContent = v + '%';
-  if (api) {
-    api.settings.display.scale = v / 100;
-    api.updateSettings();
-    api.render();
-  }
+  if (api) { api.settings.display.scale = v / 100; api.updateSettings(); api.render(); }
 });
 
-// Theme toggle
-const themeBtn = document.getElementById('theme-btn');
-const iconMoon = document.getElementById('theme-icon-moon');
-const iconSun = document.getElementById('theme-icon-sun');
-const themeLabel = document.getElementById('theme-label');
-let isLight = false;
-
+// Theme
 themeBtn.addEventListener('click', () => {
   isLight = !isLight;
   document.documentElement.classList.toggle('light', isLight);
   iconMoon.style.display = isLight ? 'none' : '';
-  iconSun.style.display = isLight ? '' : 'none';
+  iconSun.style.display  = isLight ? '' : 'none';
   themeLabel.textContent = isLight ? '다크' : '라이트';
 });
 
-// Print → PDF
-// A4 portrait 인쇄 가능 너비: 210mm - 좌우 마진 20mm = 190mm ≈ 720px @96dpi
-// alphaTab은 컨테이너 clientWidth를 기준으로 줄바꿈을 계산하므로
-// 인쇄 전 컨테이너를 A4 너비로 좁혀 재렌더링 후 print, 이후 복원한다.
-const PRINT_WIDTH_PX = 720;
-
-function doPrint() {
+// Print
+const PRINT_WIDTH = 720;
+printBtn.addEventListener('click', () => {
   if (!api || !score) { window.print(); return; }
-
   printBtn.disabled = true;
   printBtn.textContent = '준비 중...';
-
   const atMain = document.getElementById('at-main');
   const prevScale = api.settings.display.scale;
-
-  // 1) 컨테이너를 A4 너비로 고정
-  atMain.style.width = PRINT_WIDTH_PX + 'px';
-  atMain.style.maxWidth = PRINT_WIDTH_PX + 'px';
-  atMain.style.overflow = 'visible';
-
-  // 2) scale을 0.9로 고정 (A4에서 한 줄 3~4마디 기준)
+  atMain.style.width = PRINT_WIDTH + 'px';
+  atMain.style.maxWidth = PRINT_WIDTH + 'px';
   api.settings.display.scale = 0.9;
   api.updateSettings();
-
-  // 3) 재렌더링 완료 후 인쇄
   const onDone = () => {
     api.renderFinished.off(onDone);
     setTimeout(() => {
       window.print();
-
-      // 4) 인쇄 후 원상복구
       atMain.style.width = '';
       atMain.style.maxWidth = '';
-      atMain.style.overflow = '';
       api.settings.display.scale = prevScale;
       api.updateSettings();
       api.render();
-
       printBtn.disabled = false;
-      printBtn.innerHTML = `<svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" style="width:13px;height:13px"><path d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" stroke-linecap="round" stroke-linejoin="round"/></svg> PDF 인쇄`;
+      printBtn.innerHTML = `<svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" style="width:12px;height:12px;flex-shrink:0"><path d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" stroke-linecap="round" stroke-linejoin="round"/></svg> PDF 인쇄`;
     }, 400);
   };
   api.renderFinished.on(onDone);
   api.render();
-}
-
-printBtn.addEventListener('click', doPrint);
-
-// Init on load (show empty state)
-window.addEventListener('load', () => {
-  initAlphaTab();
 });
+
+window.addEventListener('load', initAlphaTab);
 </script>
 </body>
 </html>
