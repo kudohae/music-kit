@@ -8,7 +8,7 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap');
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.2s, color 0.2s, border-color 0.2s; }
 
   :root {
     --bg: #0e0e0e;
@@ -22,6 +22,18 @@
     --text-dim: #999;
     --mono: 'Space Mono', monospace;
     --serif: 'Instrument Serif', serif;
+  }
+
+  :root.light {
+    --bg: #f5f4f0;
+    --surface: #eceae4;
+    --surface2: #e2e0d8;
+    --border: #ccc9be;
+    --accent: #5a8a00;
+    --accent-dim: #3d6200;
+    --text: #1a1a1a;
+    --text-muted: #888;
+    --text-dim: #555;
   }
 
   html, body {
@@ -289,14 +301,42 @@
   .info-val { color: var(--text-dim); }
   #info-bar.hidden { display: none; }
 
-  /* Print styles */
+  /* Print styles — A4 */
   @media print {
-    #header, #sidebar, #info-bar { display: none !important; }
-    #main { display: block; overflow: visible; }
-    #score-wrap { overflow: visible; }
-    #at-main { padding: 0; }
-    html, body { overflow: visible; height: auto; background: #fff; }
-    #at-main * { color: #000 !important; }
+    @page { size: A4 portrait; margin: 10mm; }
+    #header, #sidebar, #info-bar, #drop-zone, #loading { display: none !important; }
+    html, body {
+      overflow: visible !important;
+      height: auto !important;
+      width: 100% !important;
+      background: #fff !important;
+      color: #000 !important;
+    }
+    #app { display: block !important; height: auto !important; }
+    #main { display: block !important; overflow: visible !important; height: auto !important; }
+    #score-wrap {
+      overflow: visible !important;
+      width: 100% !important;
+      height: auto !important;
+      position: static !important;
+    }
+    #at-main {
+      padding: 0 !important;
+      width: 100% !important;
+    }
+    #at-main svg, #at-main canvas {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      display: block !important;
+      page-break-inside: avoid;
+    }
+    .at-surface { background: #fff !important; }
+    * { color: #000 !important; fill: #000 !important; stroke: #000 !important; background: transparent !important; }
+    svg text { fill: #000 !important; }
+    svg line, svg path, svg rect, svg polyline, svg polygon {
+      stroke: #000 !important;
+    }
   }
 
   /* AlphaTab overrides for dark bg */
@@ -322,6 +362,12 @@
       <label style="font-size:11px;color:var(--text-muted)">zoom</label>
       <input type="range" id="zoom-range" min="50" max="200" value="100" step="10">
       <span id="zoom-val">100%</span>
+
+      <button class="ctrl-btn" id="theme-btn" title="라이트/다크 모드 전환">
+        <svg id="theme-icon-moon" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg id="theme-icon-sun" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor" style="display:none"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="theme-label">라이트</span>
+      </button>
 
       <button class="ctrl-btn accent-btn" id="print-btn" disabled>
         <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -384,6 +430,7 @@ function initAlphaTab() {
       layoutMode: alphaTab.LayoutMode.Page,
       scale: 1.0,
       stretchForce: 1.0,
+      pageSize: alphaTab.PageSize ? alphaTab.PageSize.A4 : undefined,
     },
     notation: {
       elements: new Map([
@@ -482,10 +529,46 @@ zoomRange.addEventListener('input', () => {
   }
 });
 
-// Print → PDF
-printBtn.addEventListener('click', () => {
-  window.print();
+// Theme toggle
+const themeBtn = document.getElementById('theme-btn');
+const iconMoon = document.getElementById('theme-icon-moon');
+const iconSun = document.getElementById('theme-icon-sun');
+const themeLabel = document.getElementById('theme-label');
+let isLight = false;
+
+themeBtn.addEventListener('click', () => {
+  isLight = !isLight;
+  document.documentElement.classList.toggle('light', isLight);
+  iconMoon.style.display = isLight ? 'none' : '';
+  iconSun.style.display = isLight ? '' : 'none';
+  themeLabel.textContent = isLight ? '다크' : '라이트';
 });
+
+// Print → PDF (A4에 맞게 scale 재조정 후 인쇄)
+const A4_WIDTH_PX = 794; // 210mm @ 96dpi
+
+function doPrint() {
+  if (!api) { window.print(); return; }
+  const wrap = document.getElementById('score-wrap');
+  const availW = wrap.clientWidth || A4_WIDTH_PX;
+  const ratio = A4_WIDTH_PX / availW;
+  const prevScale = api.settings.display.scale;
+  api.settings.display.scale = prevScale * ratio;
+  api.updateSettings();
+  api.renderFinished.on(function onDone() {
+    api.renderFinished.off(onDone);
+    setTimeout(() => {
+      window.print();
+      // 인쇄 후 원래 scale 복원
+      api.settings.display.scale = prevScale;
+      api.updateSettings();
+      api.render();
+    }, 300);
+  });
+  api.render();
+}
+
+printBtn.addEventListener('click', doPrint);
 
 // Init on load (show empty state)
 window.addEventListener('load', () => {
