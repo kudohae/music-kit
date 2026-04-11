@@ -308,35 +308,15 @@
     html, body {
       overflow: visible !important;
       height: auto !important;
-      width: 100% !important;
       background: #fff !important;
-      color: #000 !important;
     }
-    #app { display: block !important; height: auto !important; }
-    #main { display: block !important; overflow: visible !important; height: auto !important; }
-    #score-wrap {
-      overflow: visible !important;
-      width: 100% !important;
-      height: auto !important;
-      position: static !important;
-    }
-    #at-main {
-      padding: 0 !important;
-      width: 100% !important;
-    }
-    #at-main svg, #at-main canvas {
-      width: 100% !important;
-      max-width: 100% !important;
-      height: auto !important;
-      display: block !important;
-      page-break-inside: avoid;
-    }
-    .at-surface { background: #fff !important; }
-    * { color: #000 !important; fill: #000 !important; stroke: #000 !important; background: transparent !important; }
+    #app, #main { display: block !important; height: auto !important; overflow: visible !important; }
+    #score-wrap { overflow: visible !important; height: auto !important; position: static !important; }
+    #at-main { padding: 0 !important; overflow: visible !important; }
+    * { color: #000 !important; background: transparent !important; }
     svg text { fill: #000 !important; }
-    svg line, svg path, svg rect, svg polyline, svg polygon {
-      stroke: #000 !important;
-    }
+    svg line, svg path, svg polyline, svg polygon, svg rect { stroke: #000 !important; }
+    .at-surface { background: #fff !important; }
   }
 
   /* AlphaTab overrides for dark bg */
@@ -544,27 +524,49 @@ themeBtn.addEventListener('click', () => {
   themeLabel.textContent = isLight ? '다크' : '라이트';
 });
 
-// Print → PDF (A4에 맞게 scale 재조정 후 인쇄)
-const A4_WIDTH_PX = 794; // 210mm @ 96dpi
+// Print → PDF
+// A4 portrait 인쇄 가능 너비: 210mm - 좌우 마진 20mm = 190mm ≈ 720px @96dpi
+// alphaTab은 컨테이너 clientWidth를 기준으로 줄바꿈을 계산하므로
+// 인쇄 전 컨테이너를 A4 너비로 좁혀 재렌더링 후 print, 이후 복원한다.
+const PRINT_WIDTH_PX = 720;
 
 function doPrint() {
-  if (!api) { window.print(); return; }
-  const wrap = document.getElementById('score-wrap');
-  const availW = wrap.clientWidth || A4_WIDTH_PX;
-  const ratio = A4_WIDTH_PX / availW;
+  if (!api || !score) { window.print(); return; }
+
+  printBtn.disabled = true;
+  printBtn.textContent = '준비 중...';
+
+  const atMain = document.getElementById('at-main');
   const prevScale = api.settings.display.scale;
-  api.settings.display.scale = prevScale * ratio;
+
+  // 1) 컨테이너를 A4 너비로 고정
+  atMain.style.width = PRINT_WIDTH_PX + 'px';
+  atMain.style.maxWidth = PRINT_WIDTH_PX + 'px';
+  atMain.style.overflow = 'visible';
+
+  // 2) scale을 0.9로 고정 (A4에서 한 줄 3~4마디 기준)
+  api.settings.display.scale = 0.9;
   api.updateSettings();
-  api.renderFinished.on(function onDone() {
+
+  // 3) 재렌더링 완료 후 인쇄
+  const onDone = () => {
     api.renderFinished.off(onDone);
     setTimeout(() => {
       window.print();
-      // 인쇄 후 원래 scale 복원
+
+      // 4) 인쇄 후 원상복구
+      atMain.style.width = '';
+      atMain.style.maxWidth = '';
+      atMain.style.overflow = '';
       api.settings.display.scale = prevScale;
       api.updateSettings();
       api.render();
-    }, 300);
-  });
+
+      printBtn.disabled = false;
+      printBtn.innerHTML = `<svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" style="width:13px;height:13px"><path d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" stroke-linecap="round" stroke-linejoin="round"/></svg> PDF 인쇄`;
+    }, 400);
+  };
+  api.renderFinished.on(onDone);
   api.render();
 }
 
