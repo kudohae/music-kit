@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GP Viewer</title>
+<script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --accent: #c8f05a;
+    --accent-dim: #8aaa2a;
+    --text: #f0f0f0;
+    --text-muted: #666;
+    --text-dim: #999;
+    --mono: 'Space Mono', monospace;
+    --serif: 'Instrument Serif', serif;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    overflow: hidden;
+  }
+
+  /* Layout */
+  #app { display: flex; flex-direction: column; height: 100vh; }
+
+  /* Header */
+  #header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  #logo {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+  }
+
+  #file-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    transition: border-color 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+  #file-label:hover { border-color: var(--accent); color: var(--accent); }
+  #file-label svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
+  #file-input { display: none; }
+
+  #file-name {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 240px;
+    flex: 1;
+  }
+
+  .spacer { flex: 1; }
+
+  /* Controls */
+  #controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .ctrl-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .ctrl-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
+  .ctrl-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .ctrl-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .ctrl-btn:disabled:hover { border-color: var(--border); color: var(--text-dim); }
+
+  .ctrl-btn.accent-btn {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .ctrl-btn.accent-btn:hover {
+    background: var(--accent);
+    color: #000;
+  }
+
+  /* Track selector */
+  #track-select {
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    outline: none;
+    max-width: 160px;
+  }
+  #track-select:focus { border-color: var(--accent); }
+
+  /* Zoom */
+  #zoom-range {
+    width: 80px;
+    accent-color: var(--accent);
+  }
+  #zoom-val { font-size: 11px; color: var(--text-muted); min-width: 32px; }
+
+  /* Main area */
+  #main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Sidebar */
+  #sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #sidebar-header {
+    padding: 12px 14px 8px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+  }
+
+  #track-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+  #track-list::-webkit-scrollbar { width: 4px; }
+  #track-list::-webkit-scrollbar-track { background: transparent; }
+  #track-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .track-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.1s;
+    border-left: 2px solid transparent;
+  }
+  .track-item:hover { background: var(--surface2); }
+  .track-item.active { border-left-color: var(--accent); background: var(--surface2); }
+
+  .track-num {
+    font-size: 10px;
+    color: var(--text-muted);
+    min-width: 16px;
+  }
+  .track-name {
+    font-size: 12px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .track-item.active .track-name { color: var(--accent); }
+
+  /* Score area */
+  #score-wrap {
+    flex: 1;
+    overflow: auto;
+    background: var(--bg);
+    position: relative;
+  }
+  #score-wrap::-webkit-scrollbar { width: 6px; height: 6px; }
+  #score-wrap::-webkit-scrollbar-track { background: transparent; }
+  #score-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  #at-main {
+    padding: 24px;
+    min-height: 100%;
+  }
+
+  /* Drop zone / empty state */
+  #drop-zone {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+  #drop-zone.hidden { display: none; }
+
+  #drop-icon {
+    width: 64px;
+    height: 64px;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #drop-icon svg { width: 28px; height: 28px; stroke: var(--border); fill: none; }
+
+  #drop-text { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--text-muted); }
+  #drop-sub { font-size: 11px; color: var(--border); letter-spacing: 0.06em; }
+
+  /* Loading */
+  #loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  #loading.hidden { display: none; }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Song info bar */
+  #info-bar {
+    padding: 8px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-shrink: 0;
+    font-size: 11px;
+  }
+  .info-item { display: flex; gap: 6px; align-items: center; }
+  .info-key { color: var(--text-muted); }
+  .info-val { color: var(--text-dim); }
+  #info-bar.hidden { display: none; }
+
+  /* Print styles */
+  @media print {
+    #header, #sidebar, #info-bar { display: none !important; }
+    #main { display: block; overflow: visible; }
+    #score-wrap { overflow: visible; }
+    #at-main { padding: 0; }
+    html, body { overflow: visible; height: auto; background: #fff; }
+    #at-main * { color: #000 !important; }
+  }
+
+  /* AlphaTab overrides for dark bg */
+  .at-surface { background: transparent !important; }
+  .at-surface svg text { fill: var(--text) !important; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <div id="logo">GP Viewer</div>
+
+    <label id="file-label" for="file-input">
+      <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      파일 열기
+    </label>
+    <input type="file" id="file-input" accept=".gp,.gp3,.gp4,.gp5,.gpx,.gp7">
+    <span id="file-name">파일을 선택하세요</span>
+
+    <div class="spacer"></div>
+
+    <div id="controls">
+      <label style="font-size:11px;color:var(--text-muted)">zoom</label>
+      <input type="range" id="zoom-range" min="50" max="200" value="100" step="10">
+      <span id="zoom-val">100%</span>
+
+      <button class="ctrl-btn accent-btn" id="print-btn" disabled>
+        <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        PDF 인쇄
+      </button>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="sidebar">
+      <div id="sidebar-header">트랙</div>
+      <div id="track-list"></div>
+    </div>
+
+    <div id="score-wrap">
+      <div id="at-main"></div>
+      <div id="drop-zone">
+        <div id="drop-icon">
+          <svg viewBox="0 0 24 24" stroke-width="1"><path d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div id="drop-text">악보 파일을 열어주세요</div>
+        <div id="drop-sub">.gp .gp3 .gp4 .gp5 .gpx .gp7 지원</div>
+      </div>
+      <div id="loading" class="hidden">
+        <div class="spinner"></div>
+        <span>불러오는 중...</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="info-bar" class="hidden">
+    <div class="info-item"><span class="info-key">제목</span><span class="info-val" id="i-title">—</span></div>
+    <div class="info-item"><span class="info-key">아티스트</span><span class="info-val" id="i-artist">—</span></div>
+    <div class="info-item"><span class="info-key">앨범</span><span class="info-val" id="i-album">—</span></div>
+    <div class="info-item"><span class="info-key">트랙 수</span><span class="info-val" id="i-tracks">—</span></div>
+    <div class="info-item"><span class="info-key">마디 수</span><span class="info-val" id="i-bars">—</span></div>
+  </div>
+</div>
+
+<script>
+const fileInput = document.getElementById('file-input');
+const fileName = document.getElementById('file-name');
+const dropZone = document.getElementById('drop-zone');
+const loading = document.getElementById('loading');
+const printBtn = document.getElementById('print-btn');
+const trackList = document.getElementById('track-list');
+const infoBar = document.getElementById('info-bar');
+const zoomRange = document.getElementById('zoom-range');
+const zoomVal = document.getElementById('zoom-val');
+const scoreWrap = document.getElementById('score-wrap');
+
+let api = null;
+let score = null;
+let activeTrackIdx = 0;
+
+function initAlphaTab() {
+  const settings = {
+    core: { engine: 'svg', logLevel: 0 },
+    display: {
+      layoutMode: alphaTab.LayoutMode.Page,
+      scale: 1.0,
+      stretchForce: 1.0,
+    },
+    notation: {
+      elements: new Map([
+        [alphaTab.NotationElement.ScoreTitle, true],
+        [alphaTab.NotationElement.ScoreArtist, true],
+        [alphaTab.NotationElement.ScoreAlbum, true],
+      ])
+    }
+  };
+
+  api = new alphaTab.AlphaTabApi(document.getElementById('at-main'), settings);
+
+  api.scoreLoaded.on(s => {
+    score = s;
+    renderTrackList(s);
+    updateInfoBar(s);
+    printBtn.disabled = false;
+    loading.classList.add('hidden');
+    dropZone.classList.add('hidden');
+  });
+
+  api.renderStarted.on(() => {
+    loading.classList.remove('hidden');
+  });
+
+  api.renderFinished.on(() => {
+    loading.classList.add('hidden');
+  });
+
+  api.error.on(err => {
+    loading.classList.add('hidden');
+    alert('파일을 불러오지 못했습니다: ' + (err.message || err));
+  });
+}
+
+function renderTrackList(s) {
+  trackList.innerHTML = '';
+  s.tracks.forEach((track, i) => {
+    const item = document.createElement('div');
+    item.className = 'track-item' + (i === 0 ? ' active' : '');
+    item.innerHTML = `<span class="track-num">${i + 1}</span><span class="track-name">${track.name || '트랙 ' + (i+1)}</span>`;
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.track-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+      activeTrackIdx = i;
+      api.renderTracks([s.tracks[i]]);
+    });
+    trackList.appendChild(item);
+  });
+}
+
+function updateInfoBar(s) {
+  document.getElementById('i-title').textContent = s.title || '—';
+  document.getElementById('i-artist').textContent = s.artist || '—';
+  document.getElementById('i-album').textContent = s.album || '—';
+  document.getElementById('i-tracks').textContent = s.tracks.length;
+  document.getElementById('i-bars').textContent = s.masterBars.length;
+  infoBar.classList.remove('hidden');
+}
+
+function loadFile(file) {
+  if (!api) initAlphaTab();
+  fileName.textContent = file.name;
+  dropZone.classList.add('hidden');
+  loading.classList.remove('hidden');
+  printBtn.disabled = true;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = new Uint8Array(e.target.result);
+    api.load(data);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) loadFile(e.target.files[0]);
+});
+
+// Drag & drop onto score area
+scoreWrap.addEventListener('dragover', e => { e.preventDefault(); });
+scoreWrap.addEventListener('drop', e => {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file) loadFile(file);
+});
+
+// Zoom
+zoomRange.addEventListener('input', () => {
+  const v = parseInt(zoomRange.value);
+  zoomVal.textContent = v + '%';
+  if (api) {
+    api.settings.display.scale = v / 100;
+    api.updateSettings();
+    api.render();
+  }
+});
+
+// Print → PDF
+printBtn.addEventListener('click', () => {
+  window.print();
+});
+
+// Init on load (show empty state)
+window.addEventListener('load', () => {
+  initAlphaTab();
+});
+</script>
+</body>
+</html>
