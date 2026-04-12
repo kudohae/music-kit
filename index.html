@@ -238,6 +238,7 @@ const fileNameEl = $('file-name');
 const dropZone   = $('drop-zone');
 const loadingEl  = $('loading');
 const printBtn   = $('print-btn');
+const loadingEl  = $('loading');
 const trackList  = $('track-list');
 const infoBar    = $('info-bar');
 const zoomRange  = $('zoom-range');
@@ -311,14 +312,12 @@ function initAlphaTab() {
   api.scoreLoaded.on(s => {
     score = s;
     buildTrackSidebar(s);
-    buildTrackDropdown(s);
     updateInfoBar(s);
     printBtn.disabled = false;
     loadingEl.classList.add('hidden');
     dropZone.classList.add('hidden');
     playerBar.classList.remove('hidden');
     loopBtn.disabled = false;
-    trackSel.disabled = false;
     // play-btn는 playerReady 이후에 활성화
   });
 
@@ -393,37 +392,11 @@ function buildTrackSidebar(s) {
     item.addEventListener('click', () => {
       document.querySelectorAll('.track-item').forEach(el => el.classList.remove('active'));
       item.classList.add('active');
-      // dropdown sync
-      trackSel.value = String(i);
       api.renderTracks([s.tracks[i]]);
     });
     trackList.appendChild(item);
   });
 }
-
-// ── Player bar 트랙 드롭다운 ──
-function buildTrackDropdown(s) {
-  trackSel.innerHTML = '<option value="-1">전체</option>';
-  s.tracks.forEach((track, i) => {
-    const opt = document.createElement('option');
-    opt.value = String(i);
-    opt.textContent = `${i + 1}. ${track.name || '트랙 ' + (i + 1)}`;
-    trackSel.appendChild(opt);
-  });
-  trackSel.value = '-1';
-}
-
-trackSel.addEventListener('change', () => {
-  if (!api || !score) return;
-  const idx = parseInt(trackSel.value);
-  // sidebar sync
-  document.querySelectorAll('.track-item').forEach((el, i) => el.classList.toggle('active', i === idx));
-  if (idx === -1) {
-    api.renderTracks(score.tracks); // 전체
-  } else {
-    api.renderTracks([score.tracks[idx]]);
-  }
-});
 
 // ── Info bar ──
 function updateInfoBar(s) {
@@ -446,8 +419,6 @@ function loadFile(file) {
   playBtn.disabled = true;
   stopBtn.disabled = true;
   loopBtn.disabled = true;
-  trackSel.disabled = true;
-  trackSel.innerHTML = '<option value="-1">전체</option>';
   progFill.style.width = '0%';
   timeCur.textContent = '0:00';
   timeTotal.textContent = '0:00';
@@ -509,6 +480,17 @@ themeBtn.addEventListener('click', () => {
   moonIco.style.display = isLight ? 'none' : '';
   sunIco.style.display  = isLight ? '' : 'none';
   themeLbl.textContent  = isLight ? '다크' : '라이트';
+});
+
+// ── 스페이스바 재생/일시정지 ──
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' && api && !playBtn.disabled) {
+    // input, textarea에 포커스 중이면 무시
+    const tag = document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    e.preventDefault();
+    api.playPause();
+  }
 });
 
 // ── Print ──
