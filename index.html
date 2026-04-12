@@ -107,6 +107,17 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 #play-btn svg { width: 16px; height: 16px; }
 #play-btn:disabled { border-color: var(--border); color: var(--text-dim); opacity: 0.3; }
 
+/* track dropdown in player bar */
+#track-select-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+#track-select-label { font-size: 10px; color: var(--text-muted); }
+#track-select {
+  padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface2); color: var(--text-dim); font-family: var(--mono); font-size: 11px;
+  cursor: pointer; outline: none; max-width: 140px;
+}
+#track-select:focus { border-color: var(--accent); }
+#track-select option { background: var(--surface); color: var(--text); }
+
 /* progress */
 #progress-wrap { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 #progress-bar-bg { width: 100%; height: 4px; background: var(--border); border-radius: 2px; cursor: pointer; position: relative; }
@@ -128,19 +139,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .ik { color: var(--text-muted); }
 .iv { color: var(--text-dim); margin-left: 3px; }
 
-/* ── Print ── */
-@media print {
-  @page { size: A4 portrait; margin: 10mm; }
-  #header, #sidebar, #info-bar, #player-bar, #drop-zone, #loading { display: none !important; }
-  html, body { overflow: visible !important; height: auto !important; background: #fff !important; }
-  #app, #main { display: block !important; height: auto !important; overflow: visible !important; }
-  #score-wrap { overflow: visible !important; height: auto !important; position: static !important; background: #fff !important; }
-  #at-main { padding: 0 !important; }
-  #at-main svg text { fill: #000 !important; }
-  #at-main svg line, #at-main svg path { stroke: #000 !important; }
-  #at-main svg rect[fill]:not([fill="none"]) { fill: #000 !important; }
-  #at-main svg polygon { fill: #000 !important; stroke: #000 !important; }
-}
+
 </style>
 </head>
 <body>
@@ -204,6 +203,14 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
       <svg id="ico-pause" viewBox="0 0 24 24" style="display:none"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg>
     </button>
 
+    <!-- Track dropdown -->
+    <div id="track-select-wrap">
+      <span id="track-select-label">트랙</span>
+      <select id="track-select" disabled>
+        <option value="-1">전체</option>
+      </select>
+    </div>
+
     <!-- Progress -->
     <div id="progress-wrap">
       <div id="progress-bar-bg">
@@ -264,6 +271,7 @@ const progFill   = $('progress-bar-fill');
 const timeCur    = $('time-cur');
 const timeTotal  = $('time-total');
 const sfStatus   = $('sf-status');
+const trackSel   = $('track-select');
 const tempoRange = $('tempo-range');
 const tempoVal   = $('tempo-val');
 const themeBtn   = $('theme-btn');
@@ -321,12 +329,14 @@ function initAlphaTab() {
   api.scoreLoaded.on(s => {
     score = s;
     buildTrackSidebar(s);
+    buildTrackDropdown(s);
     updateInfoBar(s);
     printBtn.disabled = false;
     loadingEl.classList.add('hidden');
     dropZone.classList.add('hidden');
     playerBar.classList.remove('hidden');
     loopBtn.disabled = false;
+    trackSel.disabled = false;
     // play-btn는 playerReady 이후에 활성화
   });
 
@@ -402,11 +412,36 @@ function buildTrackSidebar(s) {
       document.querySelectorAll('.track-item').forEach(el => el.classList.remove('active'));
       item.classList.add('active');
       // dropdown sync
-         api.renderTracks([s.tracks[i]]);
+      trackSel.value = String(i);
+      api.renderTracks([s.tracks[i]]);
     });
     trackList.appendChild(item);
   });
 }
+
+// ── Player bar 트랙 드롭다운 ──
+function buildTrackDropdown(s) {
+  trackSel.innerHTML = '<option value="-1">전체</option>';
+  s.tracks.forEach((track, i) => {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = `${i + 1}. ${track.name || '트랙 ' + (i + 1)}`;
+    trackSel.appendChild(opt);
+  });
+  trackSel.value = '-1';
+}
+
+trackSel.addEventListener('change', () => {
+  if (!api || !score) return;
+  const idx = parseInt(trackSel.value);
+  // sidebar sync
+  document.querySelectorAll('.track-item').forEach((el, i) => el.classList.toggle('active', i === idx));
+  if (idx === -1) {
+    api.renderTracks(score.tracks); // 전체
+  } else {
+    api.renderTracks([score.tracks[idx]]);
+  }
+});
 
 // ── Info bar ──
 function updateInfoBar(s) {
@@ -429,6 +464,8 @@ function loadFile(file) {
   playBtn.disabled = true;
   stopBtn.disabled = true;
   loopBtn.disabled = true;
+  trackSel.disabled = true;
+  trackSel.innerHTML = '<option value="-1">전체</option>';
   progFill.style.width = '0%';
   timeCur.textContent = '0:00';
   timeTotal.textContent = '0:00';
@@ -493,32 +530,8 @@ themeBtn.addEventListener('click', () => {
 });
 
 // ── Print ──
-const PW = 720;
 printBtn.addEventListener('click', () => {
-  if (!api || !score) { window.print(); return; }
-  printBtn.disabled = true;
-  printBtn.textContent = '준비 중...';
-  const el = $('at-main');
-  const prev = api.settings.display.scale;
-  el.style.width = PW + 'px';
-  el.style.maxWidth = PW + 'px';
-  api.settings.display.scale = 0.9;
-  api.updateSettings();
-  const done = () => {
-    api.renderFinished.off(done);
-    setTimeout(() => {
-      window.print();
-      el.style.width = '';
-      el.style.maxWidth = '';
-      api.settings.display.scale = prev;
-      api.updateSettings();
-      api.render();
-      printBtn.disabled = false;
-      printBtn.innerHTML = `<svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" style="width:12px;height:12px;flex-shrink:0"><path d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" stroke-linecap="round" stroke-linejoin="round"/></svg> PDF 인쇄`;
-    }, 400);
-  };
-  api.renderFinished.on(done);
-  api.render();
+  if (api) api.print();
 });
 
 window.addEventListener('load', initAlphaTab);
