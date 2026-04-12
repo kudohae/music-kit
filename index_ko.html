@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>GP Viewer - Open, Play, Print Your TAB Online</title>
+    <meta name="description" content="Free online Guitar Pro viewer. Open, play, and print your GP files (GP3, GP4, GP5, GPX) directly in your browser. Fast, secure, and no installation required.">
+    <meta name="keywords" content="Guitar Pro, online TAB, Guitar Pro Viewer Online, GP5 Viewer, tab player, tab viewer, 기타프로 뷰어, 온라인 타브">
+    <link rel="canonical" href="https://kudohae.github.io/gp-viewer/">
+
+    <link rel="alternate" hreflang="en" href="https://kudohae.github.io/gp-viewer/" />
+    <link rel="alternate" hreflang="ko" href="https://kudohae.github.io/gp-viewer/index_ko.html" />
+    <link rel="alternate" hreflang="x-default" href="https://kudohae.github.io/gp-viewer/" />
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="GP Viewer - Open, Play, Print Your TAB Online">
+    <meta property="og:description" content="Open, play and print your Guitar Pro files online for free. No installation needed.">
+    <meta property="og:url" content="https://kudohae.github.io/gp-viewer/">
+
+    <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.min.js"></script>
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e0e; --surface: #161616; --surface2: #1e1e1e; --border: #2a2a2a;
+      --accent: #c8f05a; --text: #f0f0f0; --text-muted: #666; --text-dim: #999;
+      --ink: #e0e0e0;
+      --mono: 'Space Mono', monospace; --serif: 'Instrument Serif', serif;
+    }
+:root.light {
+  --bg: #f5f4f0; --surface: #eceae4; --surface2: #e2e0d8; --border: #ccc9be;
+  --accent: #5a8a00; --text: #1a1a1a; --text-muted: #888; --text-dim: #555;
+  --ink: #111111;
+}
+
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 13px; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+#app { display: flex; flex-direction: column; height: 100dvh; }
+
+/* ── Header ── */
+#header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+#logo { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--accent); flex-shrink: 0; }
+
+#file-label { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 11px; color: var(--text-dim); flex-shrink: 0; touch-action: manipulation; }
+#file-label:hover { border-color: var(--accent); color: var(--accent); }
+#file-label svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
+#file-input { display: none; }
+#file-name { font-size: 11px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+.spacer { flex: 1; }
+
+.hbtn { display: flex; align-items: center; gap: 5px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--text-dim); font-family: var(--mono); font-size: 11px; cursor: pointer; white-space: nowrap; flex-shrink: 0; touch-action: manipulation; }
+.hbtn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
+.hbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.hbtn:disabled { opacity: 0.3; cursor: not-allowed; }
+.hbtn.accent { border-color: var(--accent); color: var(--accent); }
+.hbtn.accent:hover:not(:disabled) { background: var(--accent); color: #000; }
+
+/* 햄버거 버튼 (트랙 드로어 열기) */
+#drawer-btn { display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--text-dim); cursor: pointer; flex-shrink: 0; touch-action: manipulation; }
+#drawer-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
+#drawer-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+#zoom-range { width: 68px; accent-color: var(--accent); }
+#zoom-val { font-size: 11px; color: var(--text-muted); min-width: 30px; }
+#zoom-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+/* ── Main ── */
+#main { display: flex; flex: 1; overflow: hidden; position: relative; }
+
+/* ── Sidebar (데스크탑: 고정 패널 / 모바일: 오버레이 드로어) ── */
+#sidebar { width: 186px; flex-shrink: 0; border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; transition: transform 0.25s ease; }
+#sidebar-header { padding: 9px 11px 6px; font-size: 9px; letter-spacing: 0.13em; color: var(--text-muted); border-bottom: 1px solid var(--border); text-transform: uppercase; }
+#track-list { flex: 1; overflow-y: auto; padding: 4px 0; -webkit-overflow-scrolling: touch; }
+#track-list::-webkit-scrollbar { width: 3px; }
+#track-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.track-item { display: flex; align-items: center; padding: 10px 11px; cursor: pointer; border-left: 2px solid transparent; gap: 7px; touch-action: manipulation; }
+.track-item:hover { background: var(--surface2); }
+.track-item.active { border-left-color: var(--accent); background: var(--surface2); }
+.track-num { font-size: 9px; color: var(--text-muted); min-width: 13px; flex-shrink: 0; }
+.track-name { font-size: 11px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track-item.active .track-name { color: var(--accent); }
+
+/* 드로어 오버레이 */
+#drawer-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; }
+#drawer-overlay.open { display: block; }
+
+/* ── Score ── */
+#score-wrap { flex: 1; overflow: auto; background: var(--bg); position: relative; -webkit-overflow-scrolling: touch; }
+#score-wrap::-webkit-scrollbar { width: 5px; height: 5px; }
+#score-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+#at-main { padding: 20px 40px 20px 20px; min-height: 100%; }
+
+/* alphaTab SVG ink */
+#at-main svg text { fill: var(--ink) !important; }
+#at-main svg line, #at-main svg path { stroke: var(--ink) !important; }
+#at-main svg rect[fill]:not([fill="none"]) { fill: var(--ink) !important; }
+#at-main svg polygon { fill: var(--ink) !important; stroke: var(--ink) !important; }
+.at-cursor-bar { background: rgba(200,240,90,0.15) !important; }
+.at-cursor-beat { background: rgba(200,240,90,0.7) !important; width: 2px !important; }
+.at-selection div { background: rgba(200,240,90,0.2) !important; }
+.at-highlight * { fill: var(--accent) !important; stroke: var(--accent) !important; }
+
+/* ── Drop / Loading ── */
+#drop-zone { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; pointer-events: none; }
+#drop-zone.hidden { display: none; }
+#drop-icon { width: 58px; height: 58px; border: 1px dashed var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+#drop-icon svg { width: 25px; height: 25px; stroke: var(--border); fill: none; }
+#drop-text { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--text-muted); }
+#drop-sub { font-size: 10px; color: var(--border); letter-spacing: 0.06em; }
+#loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--bg) 92%, transparent); gap: 10px; font-size: 11px; color: var(--text-muted); z-index: 10; }
+#loading.hidden { display: none; }
+.spinner { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Player bar ── */
+#player-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+#player-bar.hidden { display: none; }
+
+.rbtn { border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; touch-action: manipulation; }
+.rbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.rbtn:disabled { opacity: 0.3; cursor: not-allowed; }
+#stop-btn { width: 34px; height: 34px; }
+#stop-btn svg { width: 13px; height: 13px; }
+#play-btn { width: 42px; height: 42px; border-color: var(--accent); color: var(--accent); }
+#play-btn:hover:not(:disabled) { background: var(--accent); color: #000; }
+#play-btn svg { width: 18px; height: 18px; }
+#play-btn:disabled { border-color: var(--border); color: var(--text-dim); opacity: 0.3; }
+
+#progress-wrap { flex: 1; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+#progress-bar-bg { width: 100%; height: 5px; background: var(--border); border-radius: 3px; cursor: pointer; position: relative; touch-action: none; }
+#progress-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 0%; pointer-events: none; }
+#time-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); }
+#sf-status { font-size: 10px; color: var(--text-muted); flex-shrink: 0; }
+
+#loop-btn { font-size: 11px; }
+#loop-btn.on { border-color: var(--accent); color: var(--accent); }
+#tempo-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+#tempo-lbl { font-size: 10px; color: var(--text-muted); }
+#tempo-range { width: 58px; accent-color: var(--accent); }
+#tempo-val { font-size: 10px; color: var(--text-dim); min-width: 32px; }
+
+/* ── Info bar ── */
+#info-bar { padding: 5px 12px; border-top: 1px solid var(--border); background: var(--surface); display: flex; gap: 12px; align-items: center; flex-shrink: 0; font-size: 10px; overflow-x: auto; white-space: nowrap; }
+#info-bar.hidden { display: none; }
+.ik { color: var(--text-muted); }
+.iv { color: var(--text-dim); margin-left: 3px; }
+
+/* ══════════════════════════════
+   모바일 (≤ 640px)
+══════════════════════════════ */
+@media (max-width: 640px) {
+  /* 헤더: 로고 + 파일열기 + spacer + 아이콘들만 */
+  #zoom-group { display: none; }           /* zoom 슬라이더 숨김 (핀치줌 사용) */
+  #theme-lbl  { display: none; }           /* 테마 버튼 텍스트 숨김 */
+  .hbtn#print-btn span { display: none; }  /* 인쇄 버튼 텍스트 숨김 */
+  #file-name  { display: none; }           /* 파일명 숨김 (공간 절약) */
+
+  /* 햄버거 버튼 표시 */
+  #drawer-btn { display: flex; }
+
+  /* 사이드바: 오버레이 드로어로 전환 */
+  #sidebar {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    z-index: 200;
+    width: 220px;
+    transform: translateX(-100%);
+    border-right: 1px solid var(--border);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.4);
+  }
+  #sidebar.open { transform: translateX(0); }
+
+  /* 플레이어 바: 템포 숨김 (화면 좁음) */
+  #tempo-wrap { display: none; }
+
+  /* 진행 바 터치 영역 확대 */
+  #progress-bar-bg { height: 6px; }
+
+  /* 버튼 터치 타깃 확대 */
+  #stop-btn { width: 38px; height: 38px; }
+  #play-btn  { width: 46px; height: 46px; }
+
+  /* 악보 패딩 축소 */
+  #at-main { padding: 12px 16px 12px 12px; }
+
+  /* 인포바 숨김 (화면 절약) */
+  #info-bar { display: none !important; }
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Header -->
+  <div id="header">
+    <div id="logo">GP Viewer</div>
+    <!-- 모바일: 트랙 드로어 열기 -->
+    <button id="drawer-btn" aria-label="Tracks">
+      <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <label id="file-label" for="file-input">
+      <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Open File
+    </label>
+    <input type="file" id="file-input" accept=".gp,.gp3,.gp4,.gp5,.gpx,.gp7">
+    <span id="file-name">Select your file</span>
+    <div class="spacer"></div>
+    <div id="zoom-group">
+      <label style="font-size:10px;color:var(--text-muted)">Zoom</label>
+      <input type="range" id="zoom-range" min="50" max="200" value="100" step="10">
+      <span id="zoom-val">100%</span>
+    </div>
+    <button class="hbtn" id="theme-btn">
+      <svg id="moon-ico" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg id="sun-ico" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor" style="display:none"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="theme-lbl">Light</span>
+    </button>
+    <button class="hbtn accent" id="print-btn" disabled>
+      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Print</span>
+    </button>
+  </div>
+
+  <!-- Main -->
+  <div id="main">
+    <!-- 모바일 드로어 오버레이 -->
+    <div id="drawer-overlay"></div>
+    <div id="sidebar">
+      <div id="sidebar-header">Tracks</div>
+      <div id="track-list"></div>
+    </div>
+    <div id="score-wrap">
+      <div id="at-main"></div>
+      <div id="drop-zone">
+        <div id="drop-icon">
+          <svg viewBox="0 0 24 24" stroke-width="1"><path d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div id="drop-text">Open your Guitar Pro file</div>
+        <div id="drop-sub">(.gp .gp3 .gp4 .gp5 .gpx .gp7)</div>
+      </div>
+      <div id="loading" class="hidden">
+        <div class="spinner"></div>
+        <span>Loading...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Player bar -->
+  <div id="player-bar" class="hidden">
+    <!-- Stop -->
+    <button class="rbtn" id="stop-btn" disabled>
+      <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1.5" fill="currentColor"/></svg>
+    </button>
+    <!-- Play/Pause -->
+    <button class="rbtn" id="play-btn" disabled>
+      <svg id="ico-play" viewBox="0 0 24 24"><path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" fill="currentColor"/></svg>
+      <svg id="ico-pause" viewBox="0 0 24 24" style="display:none"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg>
+    </button>
+
+
+    <!-- Progress -->
+    <div id="progress-wrap">
+      <div id="progress-bar-bg">
+        <div id="progress-bar-fill"></div>
+      </div>
+      <div id="time-row">
+        <span id="time-cur">0:00</span>
+        <span id="sf-status">Loading SoundFont...</span>
+        <span id="time-total">0:00</span>
+      </div>
+    </div>
+
+    <!-- Loop -->
+    <button class="hbtn" id="loop-btn" disabled>
+      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" style="width:12px;height:12px"><path d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Loop
+    </button>
+
+    <!-- Tempo -->
+    <div id="tempo-wrap">
+      <span id="tempo-lbl">Tempo</span>
+      <input type="range" id="tempo-range" min="25" max="200" value="100" step="5">
+      <span id="tempo-val">100%</span>
+    </div>
+  </div>
+
+  <!-- Info bar -->
+  <div id="info-bar" class="hidden">
+    <span class="ik">Title</span><span class="iv" id="i-title">—</span>
+    <span class="ik">Artist</span><span class="iv" id="i-artist">—</span>
+    <span class="ik">Album</span><span class="iv" id="i-album">—</span>
+    <span class="ik">Tracks</span><span class="iv" id="i-tracks">—</span>
+    <span class="ik">Bars</span><span class="iv" id="i-bars">—</span>
+  </div>
+</div>
+
+<script>
+// ── DOM ──
+const $ = id => document.getElementById(id);
+const fileInput  = $('file-input');
+const fileNameEl = $('file-name');
+const dropZone   = $('drop-zone');
+const loadingEl  = $('loading');
+const printBtn   = $('print-btn');
+const trackList  = $('track-list');
+const infoBar    = $('info-bar');
+const zoomRange  = $('zoom-range');
+const zoomVal    = $('zoom-val');
+const scoreWrap  = $('score-wrap');
+const playerBar  = $('player-bar');
+const playBtn    = $('play-btn');
+const stopBtn    = $('stop-btn');
+const loopBtn    = $('loop-btn');
+const icoPlay    = $('ico-play');
+const icoPause   = $('ico-pause');
+const progressBg = $('progress-bar-bg');
+const progFill   = $('progress-bar-fill');
+const timeCur    = $('time-cur');
+const timeTotal  = $('time-total');
+const sfStatus   = $('sf-status');
+const tempoRange = $('tempo-range');
+const tempoVal   = $('tempo-val');
+const themeBtn   = $('theme-btn');
+const moonIco    = $('moon-ico');
+const sunIco     = $('sun-ico');
+const themeLbl   = $('theme-lbl');
+
+let api      = null;
+let score    = null;
+let loopOn   = false;
+let isLight  = false;
+let prevTime = -1;
+
+// ── Helpers ──
+function fmt(ms) {
+  const s = (ms / 1000) | 0;
+  return ((s / 60) | 0) + ':' + String(s % 60).padStart(2, '0');
+}
+
+// Playing 상태인지 — alphaTab.synth.PlayerState.Playing === 1
+function isStatePlaying(state) {
+  try { return state === alphaTab.synth.PlayerState.Playing; } catch(e) { return state === 1; }
+}
+
+function syncPlayBtn(playing) {
+  icoPlay.style.display  = playing ? 'none' : '';
+  icoPause.style.display = playing ? '' : 'none';
+  playBtn.title = playing ? 'Pause' : 'Play';
+}
+
+// ── Init ──
+function initAlphaTab() {
+  const settings = {
+    core: { engine: 'svg', logLevel: 0 },
+    display: { layoutMode: alphaTab.LayoutMode.Page, scale: 1.0, stretchForce: 1.0 },
+    notation: {
+      elements: new Map([
+        [alphaTab.NotationElement.ScoreTitle,  true],
+        [alphaTab.NotationElement.ScoreArtist, true],
+        [alphaTab.NotationElement.ScoreAlbum,  true],
+      ])
+    },
+    player: {
+      enablePlayer: true,
+      enableCursor: true,
+      enableUserInteraction: true,
+      soundFont: 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/soundfont/sonivox.sf2',
+      scrollElement: scoreWrap,
+    }
+  };
+
+  api = new alphaTab.AlphaTabApi($('at-main'), settings);
+
+  // ── Score loaded ──
+  api.scoreLoaded.on(s => {
+    score = s;
+    buildTrackSidebar(s);
+    updateInfoBar(s);
+    printBtn.disabled = false;
+    loadingEl.classList.add('hidden');
+    dropZone.classList.add('hidden');
+    playerBar.classList.remove('hidden');
+    loopBtn.disabled = false;
+    // play-btn는 playerReady 이후에 활성화
+  });
+
+  api.renderStarted.on(() => loadingEl.classList.remove('hidden'));
+  api.renderFinished.on(() => loadingEl.classList.add('hidden'));
+
+  // SoundFont 로딩 퍼센트 — 공식 이벤트: soundFontLoad (단수)
+  api.soundFontLoad.on(e => {
+    const pct = Math.floor((e.loaded / e.total) * 100);
+    sfStatus.textContent = `SF ${pct}%`;
+  });
+
+  // playerReady: SF + MIDI 준비 완료 → 버튼 활성화
+  api.playerReady.on(() => {
+    sfStatus.textContent = '';
+    playBtn.disabled = false;
+    stopBtn.disabled = false;
+  });
+
+  // ★ playerStateChanged: 재생/일시정지/정지 아이콘 전환
+  api.playerStateChanged.on(e => {
+    const playing = isStatePlaying(e.state);
+    syncPlayBtn(playing);
+    // stopped(e.stopped===true) 면 stop 버튼도 비활성
+    if (e.stopped) {
+      stopBtn.disabled = true;
+      progFill.style.width = '0%';
+      timeCur.textContent = '0:00';
+      prevTime = -1;
+    } else {
+      stopBtn.disabled = false;
+    }
+  });
+
+  // ★ playerPositionChanged: 진행 바 업데이트
+  api.playerPositionChanged.on(e => {
+    const cur = e.currentTime;
+    const end = e.endTime;
+    // 초 단위로만 갱신
+    const curSec = (cur / 1000) | 0;
+    if (curSec !== prevTime) {
+      prevTime = curSec;
+      timeCur.textContent  = fmt(cur);
+      timeTotal.textContent = fmt(end);
+    }
+    // 진행 바는 매 이벤트마다 부드럽게
+    if (end > 0) progFill.style.width = Math.min(100, (cur / end) * 100) + '%';
+  });
+
+  // 재생 완료
+  api.playerFinished.on(() => {
+    syncPlayBtn(false);
+    progFill.style.width = '0%';
+    timeCur.textContent = '0:00';
+    stopBtn.disabled = true;
+    prevTime = -1;
+  });
+
+  api.error.on(err => {
+    loadingEl.classList.add('hidden');
+    alert('Failed to load file: ' + (err.message || String(err)));
+  });
+}
+
+// ── Sidebar ──
+function buildTrackSidebar(s) {
+  trackList.innerHTML = '';
+  s.tracks.forEach((track, i) => {
+    const item = document.createElement('div');
+    item.className = 'track-item' + (i === 0 ? ' active' : '');
+    item.innerHTML = `<span class="track-num">${i + 1}</span><span class="track-name">${track.name || 'Track ' + (i + 1)}</span>`;
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.track-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+      api.renderTracks([s.tracks[i]]);
+    });
+    trackList.appendChild(item);
+  });
+}
+
+// ── Info bar ──
+function updateInfoBar(s) {
+  $('i-title').textContent  = s.title  || '—';
+  $('i-artist').textContent = s.artist || '—';
+  $('i-album').textContent  = s.album  || '—';
+  $('i-tracks').textContent = s.tracks.length;
+  $('i-bars').textContent   = s.masterBars.length;
+  infoBar.classList.remove('hidden');
+}
+
+// ── Load file ──
+function loadFile(file) {
+  if (!api) initAlphaTab();
+  if (api) { try { api.stop(); } catch(e) {} }
+  fileNameEl.textContent = file.name;
+  dropZone.classList.add('hidden');
+  loadingEl.classList.remove('hidden');
+  printBtn.disabled = true;
+  playBtn.disabled = true;
+  stopBtn.disabled = true;
+  loopBtn.disabled = true;
+  progFill.style.width = '0%';
+  timeCur.textContent = '0:00';
+  timeTotal.textContent = '0:00';
+  sfStatus.textContent = 'Loading SoundFont...';
+  syncPlayBtn(false);
+  prevTime = -1;
+  const reader = new FileReader();
+  reader.onload = e => api.load(new Uint8Array(e.target.result));
+  reader.readAsArrayBuffer(file);
+}
+
+fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+scoreWrap.addEventListener('dragover', e => e.preventDefault());
+scoreWrap.addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+
+// ── Play / Pause ──
+playBtn.addEventListener('click', () => { if (api) api.playPause(); });
+
+// ── Stop ──
+stopBtn.addEventListener('click', () => { if (api) api.stop(); });
+
+// ── Loop ──
+loopBtn.addEventListener('click', () => {
+  loopOn = !loopOn;
+  api.isLooping = loopOn;
+  loopBtn.classList.toggle('on', loopOn);
+});
+
+// ── Seek (클릭 위치로 이동) ──
+progressBg.addEventListener('click', e => {
+  if (!api || !score) return;
+  const ratio = (e.clientX - progressBg.getBoundingClientRect().left) / progressBg.offsetWidth;
+  // alphaTab seek: tickPosition 사용
+  const totalTicks = score.masterBars.length * 3840;
+  api.tickPosition = Math.floor(Math.max(0, Math.min(1, ratio)) * totalTicks);
+});
+
+// ── Tempo ──
+tempoRange.addEventListener('input', () => {
+  const v = parseInt(tempoRange.value);
+  tempoVal.textContent = v + '%';
+  if (api) api.playbackSpeed = v / 100;
+});
+
+// ── Zoom ──
+zoomRange.addEventListener('input', () => {
+  const v = parseInt(zoomRange.value);
+  zoomVal.textContent = v + '%';
+  if (api) { api.settings.display.scale = v / 100; api.updateSettings(); api.render(); }
+});
+
+// ── Theme ──
+themeBtn.addEventListener('click', () => {
+  isLight = !isLight;
+  document.documentElement.classList.toggle('light', isLight);
+  moonIco.style.display = isLight ? 'none' : '';
+  sunIco.style.display  = isLight ? '' : 'none';
+  themeLbl.textContent  = isLight ? 'Dark' : 'Light';
+});
+
+// ── 모바일 드로어 ──
+const drawerBtn     = $('drawer-btn');
+const sidebar       = $('sidebar');
+const drawerOverlay = $('drawer-overlay');
+
+function openDrawer()  { sidebar.classList.add('open'); drawerOverlay.classList.add('open'); }
+function closeDrawer() { sidebar.classList.remove('open'); drawerOverlay.classList.remove('open'); }
+
+drawerBtn.addEventListener('click', () => sidebar.classList.contains('open') ? closeDrawer() : openDrawer());
+drawerOverlay.addEventListener('click', closeDrawer);
+
+// 트랙 클릭 시 모바일에서 드로어 자동 닫기
+trackList.addEventListener('click', () => {
+  if (window.innerWidth <= 640) closeDrawer();
+});
+
+// ── 진행 바 터치 seek ──
+progressBg.addEventListener('touchstart', e => {
+  e.preventDefault();
+  seekToTouch(e.touches[0]);
+}, { passive: false });
+progressBg.addEventListener('touchmove', e => {
+  e.preventDefault();
+  seekToTouch(e.touches[0]);
+}, { passive: false });
+
+function seekToTouch(touch) {
+  if (!api || !score) return;
+  const rect = progressBg.getBoundingClientRect();
+  const ratio = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
+  api.tickPosition = Math.floor(ratio * score.masterBars.length * 3840);
+}
+
+// ── 스페이스바 재생/일시정지 ──
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' && api && !playBtn.disabled) {
+    // input, textarea에 포커스 중이면 무시
+    const tag = document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    e.preventDefault();
+    api.playPause();
+  }
+});
+
+// ── Print ──
+printBtn.addEventListener('click', () => {
+  if (api) api.print();
+});
+
+window.addEventListener('load', initAlphaTab);
+</script>
+</body>
+</html>
