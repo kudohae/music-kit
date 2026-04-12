@@ -13,194 +13,131 @@
 :root {
   --bg: #0e0e0e; --surface: #161616; --surface2: #1e1e1e; --border: #2a2a2a;
   --accent: #c8f05a; --text: #f0f0f0; --text-muted: #666; --text-dim: #999;
-  --score-bg: #1a1a1a; --score-ink: #e8e8e8;
+  --ink: #e0e0e0;
   --mono: 'Space Mono', monospace; --serif: 'Instrument Serif', serif;
 }
 :root.light {
   --bg: #f5f4f0; --surface: #eceae4; --surface2: #e2e0d8; --border: #ccc9be;
   --accent: #5a8a00; --text: #1a1a1a; --text-muted: #888; --text-dim: #555;
-  --score-bg: #ffffff; --score-ink: #000000;
+  --ink: #111111;
 }
 
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 13px; overflow: hidden; }
 #app { display: flex; flex-direction: column; height: 100vh; }
 
 /* ── Header ── */
-#header {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  padding: 9px 14px; border-bottom: 1px solid var(--border);
-  background: var(--surface); flex-shrink: 0;
-  transition: background 0.2s, border-color 0.2s;
-}
-#logo { font-family: var(--serif); font-style: italic; font-size: 19px; color: var(--accent); flex-shrink: 0; transition: color 0.2s; }
-
-#file-label {
-  display: flex; align-items: center; gap: 6px; padding: 5px 11px;
-  border: 1px solid var(--border); border-radius: 4px; cursor: pointer;
-  font-family: var(--mono); font-size: 11px; color: var(--text-dim); flex-shrink: 0;
-  transition: border-color 0.15s, color 0.15s;
-}
+#header { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; }
+#logo { font-family: var(--serif); font-style: italic; font-size: 19px; color: var(--accent); flex-shrink: 0; }
+#file-label { display: flex; align-items: center; gap: 6px; padding: 5px 11px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
 #file-label:hover { border-color: var(--accent); color: var(--accent); }
 #file-label svg { width: 12px; height: 12px; stroke: currentColor; fill: none; }
 #file-input { display: none; }
-#file-name { font-size: 11px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; transition: color 0.2s; }
+#file-name { font-size: 11px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; }
 .spacer { flex: 1; }
 
-.ctrl-btn {
-  display: flex; align-items: center; gap: 5px; padding: 5px 10px;
-  border: 1px solid var(--border); border-radius: 4px;
-  background: transparent; color: var(--text-dim); font-family: var(--mono); font-size: 11px;
-  cursor: pointer; white-space: nowrap; flex-shrink: 0;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
-.ctrl-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
-.ctrl-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-.ctrl-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.ctrl-btn.on { border-color: var(--accent); color: var(--accent); }
-.ctrl-btn.accent-btn { border-color: var(--accent); color: var(--accent); }
-.ctrl-btn.accent-btn:hover:not(:disabled) { background: var(--accent); color: #000; }
+.hbtn { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--text-dim); font-family: var(--mono); font-size: 11px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+.hbtn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
+.hbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.hbtn:disabled { opacity: 0.3; cursor: not-allowed; }
+.hbtn.accent { border-color: var(--accent); color: var(--accent); }
+.hbtn.accent:hover:not(:disabled) { background: var(--accent); color: #000; }
 
 #zoom-range { width: 68px; accent-color: var(--accent); }
-#zoom-val { font-size: 11px; color: var(--text-muted); min-width: 30px; transition: color 0.2s; }
+#zoom-val { font-size: 11px; color: var(--text-muted); min-width: 30px; }
 
 /* ── Main ── */
 #main { display: flex; flex: 1; overflow: hidden; }
 
 /* ── Sidebar ── */
-#sidebar {
-  width: 186px; flex-shrink: 0;
-  border-right: 1px solid var(--border); background: var(--surface);
-  display: flex; flex-direction: column; overflow: hidden;
-  transition: background 0.2s, border-color 0.2s;
-}
-#sidebar-header {
-  padding: 9px 11px 6px; font-size: 9px; letter-spacing: 0.13em;
-  color: var(--text-muted); border-bottom: 1px solid var(--border); text-transform: uppercase;
-  transition: color 0.2s, border-color 0.2s;
-}
+#sidebar { width: 186px; flex-shrink: 0; border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
+#sidebar-header { padding: 9px 11px 6px; font-size: 9px; letter-spacing: 0.13em; color: var(--text-muted); border-bottom: 1px solid var(--border); text-transform: uppercase; }
 #track-list { flex: 1; overflow-y: auto; padding: 4px 0; }
 #track-list::-webkit-scrollbar { width: 3px; }
 #track-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-.track-item {
-  display: flex; align-items: center; gap: 0;
-  padding: 0; cursor: default;
-  border-left: 2px solid transparent;
-  transition: background 0.1s, border-color 0.1s;
-}
+.track-item { display: flex; align-items: center; padding: 7px 11px; cursor: pointer; border-left: 2px solid transparent; gap: 7px; }
 .track-item:hover { background: var(--surface2); }
 .track-item.active { border-left-color: var(--accent); background: var(--surface2); }
-
-.track-label {
-  display: flex; align-items: center; gap: 7px;
-  padding: 7px 10px; flex: 1; cursor: pointer; min-width: 0;
-}
-.track-num { font-size: 9px; color: var(--text-muted); min-width: 13px; flex-shrink: 0; transition: color 0.2s; }
-.track-name { font-size: 11px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.2s; }
+.track-num { font-size: 9px; color: var(--text-muted); min-width: 13px; flex-shrink: 0; }
+.track-name { font-size: 11px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .track-item.active .track-name { color: var(--accent); }
 
-/* 트랙별 재생 버튼 */
-.track-play-btn {
-  width: 26px; height: 26px; flex-shrink: 0; margin-right: 6px;
-  border-radius: 50%; border: 1px solid var(--border);
-  background: transparent; color: var(--text-muted); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
-.track-play-btn svg { width: 10px; height: 10px; }
-.track-play-btn:hover { border-color: var(--accent); color: var(--accent); }
-.track-play-btn.playing { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
-.track-play-btn:disabled { opacity: 0.25; cursor: not-allowed; }
-
-/* ── Score area ── */
-#score-wrap { flex: 1; overflow: auto; background: var(--score-bg); position: relative; transition: background 0.2s; }
+/* ── Score ── */
+#score-wrap { flex: 1; overflow: auto; background: var(--bg); position: relative; }
 #score-wrap::-webkit-scrollbar { width: 5px; height: 5px; }
 #score-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
 #at-main { padding: 24px 48px 24px 24px; min-height: 100%; }
 
-/* alphaTab SVG 색상 — 다크/라이트 모드 */
-#at-main svg text { fill: var(--score-ink) !important; transition: fill 0.2s; }
+/* alphaTab SVG ink color - dark/light mode */
+#at-main svg text { fill: var(--ink) !important; }
 #at-main svg line,
-#at-main svg path,
-#at-main svg polyline,
-#at-main svg polygon { stroke: var(--score-ink) !important; transition: stroke 0.2s; }
-#at-main svg rect:not([fill="none"]) { fill: var(--score-ink) !important; transition: fill 0.2s; }
-/* 커서(재생 위치 표시자)는 accent 색 유지 */
-.at-cursor-bar { background: color-mix(in srgb, var(--accent) 18%, transparent) !important; }
-.at-cursor-beat { background: var(--accent) !important; opacity: 0.7 !important; }
-.at-selection div { background: color-mix(in srgb, var(--accent) 25%, transparent) !important; }
+#at-main svg path { stroke: var(--ink) !important; }
+#at-main svg rect[fill]:not([fill="none"]) { fill: var(--ink) !important; }
+#at-main svg polygon { fill: var(--ink) !important; stroke: var(--ink) !important; }
+
+/* cursor/highlight - keep accent colors */
+.at-cursor-bar { background: rgba(200,240,90,0.15) !important; }
+.at-cursor-beat { background: rgba(200,240,90,0.7) !important; width: 2px !important; }
+.at-selection div { background: rgba(200,240,90,0.2) !important; }
+.at-highlight * { fill: var(--accent) !important; stroke: var(--accent) !important; }
 
 /* ── Drop / Loading ── */
 #drop-zone { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; pointer-events: none; }
 #drop-zone.hidden { display: none; }
-#drop-icon { width: 58px; height: 58px; border: 1px dashed var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s; }
+#drop-icon { width: 58px; height: 58px; border: 1px dashed var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
 #drop-icon svg { width: 25px; height: 25px; stroke: var(--border); fill: none; }
-#drop-text { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--text-muted); transition: color 0.2s; }
-#drop-sub { font-size: 10px; color: var(--border); letter-spacing: 0.06em; transition: color 0.2s; }
-
-#loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--score-bg); gap: 10px; font-size: 11px; color: var(--text-muted); z-index: 10; transition: background 0.2s; }
+#drop-text { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--text-muted); }
+#drop-sub { font-size: 10px; color: var(--border); letter-spacing: 0.06em; }
+#loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--bg) 92%, transparent); gap: 10px; font-size: 11px; color: var(--text-muted); z-index: 10; }
 #loading.hidden { display: none; }
 .spinner { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── Player bar ── */
-#player-bar {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 14px; border-top: 1px solid var(--border);
-  background: var(--surface); flex-shrink: 0;
-  transition: background 0.2s, border-color 0.2s;
-}
+#player-bar { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
 #player-bar.hidden { display: none; }
 
-.play-btn {
-  border-radius: 50%; border: 1px solid var(--border);
-  background: transparent; color: var(--text-dim); cursor: pointer;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
-.play-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-.play-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
+/* round buttons */
+.rbtn { border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.rbtn:disabled { opacity: 0.3; cursor: not-allowed; }
 #stop-btn { width: 30px; height: 30px; }
 #stop-btn svg { width: 12px; height: 12px; }
+#play-btn { width: 38px; height: 38px; border-color: var(--accent); color: var(--accent); }
+#play-btn:hover:not(:disabled) { background: var(--accent); color: #000; }
+#play-btn svg { width: 16px; height: 16px; }
+#play-btn:disabled { border-color: var(--border); color: var(--text-dim); opacity: 0.3; }
 
-#play-pause-btn {
-  width: 38px; height: 38px;
-  border-color: var(--accent); color: var(--accent);
+/* track dropdown in player bar */
+#track-select-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+#track-select-label { font-size: 10px; color: var(--text-muted); }
+#track-select {
+  padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface2); color: var(--text-dim); font-family: var(--mono); font-size: 11px;
+  cursor: pointer; outline: none; max-width: 140px;
 }
-#play-pause-btn:hover:not(:disabled) { background: var(--accent); color: #000; }
-#play-pause-btn svg { width: 16px; height: 16px; }
+#track-select:focus { border-color: var(--accent); }
+#track-select option { background: var(--surface); color: var(--text); }
 
-/* Progress */
+/* progress */
 #progress-wrap { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-#progress-bar-bg {
-  width: 100%; height: 4px; background: var(--border); border-radius: 2px;
-  cursor: pointer; position: relative; transition: background 0.2s;
-}
-#progress-bar-fill {
-  height: 100%; background: var(--accent); border-radius: 2px; width: 0%;
-  transition: width 0.15s linear, background 0.2s;
-  pointer-events: none;
-}
-#time-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); transition: color 0.2s; }
-#sf-status { font-size: 10px; color: var(--text-muted); }
-#now-playing { font-size: 10px; color: var(--accent); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#progress-bar-bg { width: 100%; height: 4px; background: var(--border); border-radius: 2px; cursor: pointer; position: relative; }
+#progress-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; pointer-events: none; }
+#time-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); }
+#sf-status { font-size: 10px; color: var(--text-muted); flex-shrink: 0; }
 
+/* loop + tempo */
+#loop-btn { font-size: 11px; }
+#loop-btn.on { border-color: var(--accent); color: var(--accent); }
 #tempo-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-#tempo-label { font-size: 10px; color: var(--text-muted); transition: color 0.2s; }
+#tempo-lbl { font-size: 10px; color: var(--text-muted); }
 #tempo-range { width: 58px; accent-color: var(--accent); }
-#tempo-val { font-size: 10px; color: var(--text-dim); min-width: 32px; transition: color 0.2s; }
+#tempo-val { font-size: 10px; color: var(--text-dim); min-width: 32px; }
 
 /* ── Info bar ── */
-#info-bar {
-  padding: 5px 14px; border-top: 1px solid var(--border); background: var(--surface);
-  display: flex; gap: 16px; align-items: center; flex-shrink: 0; font-size: 10px;
-  transition: background 0.2s, border-color 0.2s;
-}
+#info-bar { padding: 5px 14px; border-top: 1px solid var(--border); background: var(--surface); display: flex; gap: 16px; align-items: center; flex-shrink: 0; font-size: 10px; }
 #info-bar.hidden { display: none; }
-.info-key { color: var(--text-muted); transition: color 0.2s; }
-.info-val { color: var(--text-dim); margin-left: 3px; transition: color 0.2s; }
+.ik { color: var(--text-muted); }
+.iv { color: var(--text-dim); margin-left: 3px; }
 
 /* ── Print ── */
 @media print {
@@ -209,10 +146,11 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   html, body { overflow: visible !important; height: auto !important; background: #fff !important; }
   #app, #main { display: block !important; height: auto !important; overflow: visible !important; }
   #score-wrap { overflow: visible !important; height: auto !important; position: static !important; background: #fff !important; }
-  #at-main { padding: 0 !important; overflow: visible !important; }
+  #at-main { padding: 0 !important; }
   #at-main svg text { fill: #000 !important; }
-  #at-main svg line, #at-main svg path, #at-main svg polyline, #at-main svg polygon { stroke: #000 !important; }
-  #at-main svg rect:not([fill="none"]) { fill: #000 !important; }
+  #at-main svg line, #at-main svg path { stroke: #000 !important; }
+  #at-main svg rect[fill]:not([fill="none"]) { fill: #000 !important; }
+  #at-main svg polygon { fill: #000 !important; stroke: #000 !important; }
 }
 </style>
 </head>
@@ -232,12 +170,12 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
     <label style="font-size:10px;color:var(--text-muted)">zoom</label>
     <input type="range" id="zoom-range" min="50" max="200" value="100" step="10">
     <span id="zoom-val">100%</span>
-    <button class="ctrl-btn" id="theme-btn">
-      <svg id="theme-icon-moon" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <svg id="theme-icon-sun" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor" style="display:none"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span id="theme-label">라이트</span>
+    <button class="hbtn" id="theme-btn">
+      <svg id="moon-ico" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg id="sun-ico" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor" style="display:none"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="theme-lbl">라이트</span>
     </button>
-    <button class="ctrl-btn accent-btn" id="print-btn" disabled>
+    <button class="hbtn accent" id="print-btn" disabled>
       <svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
       PDF 인쇄
     </button>
@@ -268,21 +206,22 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   <!-- Player bar -->
   <div id="player-bar" class="hidden">
     <!-- Stop -->
-    <button class="play-btn" id="stop-btn" title="정지" disabled>
+    <button class="rbtn" id="stop-btn" disabled>
       <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1.5" fill="currentColor"/></svg>
     </button>
-    <!-- Play / Pause -->
-    <button class="play-btn" id="play-pause-btn" title="재생" disabled>
-      <!-- play icon -->
-      <svg id="icon-play" viewBox="0 0 24 24">
-        <path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" fill="currentColor"/>
-      </svg>
-      <!-- pause icon -->
-      <svg id="icon-pause" viewBox="0 0 24 24" style="display:none">
-        <rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/>
-        <rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/>
-      </svg>
+    <!-- Play/Pause -->
+    <button class="rbtn" id="play-btn" disabled>
+      <svg id="ico-play" viewBox="0 0 24 24"><path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" fill="currentColor"/></svg>
+      <svg id="ico-pause" viewBox="0 0 24 24" style="display:none"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg>
     </button>
+
+    <!-- Track dropdown -->
+    <div id="track-select-wrap">
+      <span id="track-select-label">트랙</span>
+      <select id="track-select" disabled>
+        <option value="-1">전체</option>
+      </select>
+    </div>
 
     <!-- Progress -->
     <div id="progress-wrap">
@@ -291,23 +230,20 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
       </div>
       <div id="time-row">
         <span id="time-cur">0:00</span>
-        <span id="now-playing"></span>
         <span id="sf-status">SoundFont 로딩 중...</span>
         <span id="time-total">0:00</span>
       </div>
     </div>
 
     <!-- Loop -->
-    <button class="ctrl-btn" id="loop-btn" title="반복 재생" disabled>
-      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none">
-        <path d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <button class="hbtn" id="loop-btn" disabled>
+      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" style="width:12px;height:12px"><path d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
       반복
     </button>
 
     <!-- Tempo -->
     <div id="tempo-wrap">
-      <span id="tempo-label">템포</span>
+      <span id="tempo-lbl">템포</span>
       <input type="range" id="tempo-range" min="25" max="200" value="100" step="5">
       <span id="tempo-val">100%</span>
     </div>
@@ -315,83 +251,70 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 
   <!-- Info bar -->
   <div id="info-bar" class="hidden">
-    <span class="info-key">제목</span><span class="info-val" id="i-title">—</span>
-    <span class="info-key">아티스트</span><span class="info-val" id="i-artist">—</span>
-    <span class="info-key">앨범</span><span class="info-val" id="i-album">—</span>
-    <span class="info-key">트랙 수</span><span class="info-val" id="i-tracks">—</span>
-    <span class="info-key">마디 수</span><span class="info-val" id="i-bars">—</span>
+    <span class="ik">제목</span><span class="iv" id="i-title">—</span>
+    <span class="ik">아티스트</span><span class="iv" id="i-artist">—</span>
+    <span class="ik">앨범</span><span class="iv" id="i-album">—</span>
+    <span class="ik">트랙 수</span><span class="iv" id="i-tracks">—</span>
+    <span class="ik">마디 수</span><span class="iv" id="i-bars">—</span>
   </div>
 </div>
 
 <script>
 // ── DOM ──
-const fileInput    = document.getElementById('file-input');
-const fileNameEl   = document.getElementById('file-name');
-const dropZone     = document.getElementById('drop-zone');
-const loadingEl    = document.getElementById('loading');
-const printBtn     = document.getElementById('print-btn');
-const trackList    = document.getElementById('track-list');
-const infoBar      = document.getElementById('info-bar');
-const zoomRange    = document.getElementById('zoom-range');
-const zoomVal      = document.getElementById('zoom-val');
-const scoreWrap    = document.getElementById('score-wrap');
-const playerBar    = document.getElementById('player-bar');
-const playPauseBtn = document.getElementById('play-pause-btn');
-const stopBtn      = document.getElementById('stop-btn');
-const loopBtn      = document.getElementById('loop-btn');
-const iconPlay     = document.getElementById('icon-play');
-const iconPause    = document.getElementById('icon-pause');
-const progressBg   = document.getElementById('progress-bar-bg');
-const progressFill = document.getElementById('progress-bar-fill');
-const timeCur      = document.getElementById('time-cur');
-const timeTotal    = document.getElementById('time-total');
-const sfStatus     = document.getElementById('sf-status');
-const nowPlaying   = document.getElementById('now-playing');
-const tempoRange   = document.getElementById('tempo-range');
-const tempoVal     = document.getElementById('tempo-val');
-const themeBtn     = document.getElementById('theme-btn');
-const iconMoon     = document.getElementById('theme-icon-moon');
-const iconSun      = document.getElementById('theme-icon-sun');
-const themeLabel   = document.getElementById('theme-label');
+const $ = id => document.getElementById(id);
+const fileInput  = $('file-input');
+const fileNameEl = $('file-name');
+const dropZone   = $('drop-zone');
+const loadingEl  = $('loading');
+const printBtn   = $('print-btn');
+const trackList  = $('track-list');
+const infoBar    = $('info-bar');
+const zoomRange  = $('zoom-range');
+const zoomVal    = $('zoom-val');
+const scoreWrap  = $('score-wrap');
+const playerBar  = $('player-bar');
+const playBtn    = $('play-btn');
+const stopBtn    = $('stop-btn');
+const loopBtn    = $('loop-btn');
+const icoPlay    = $('ico-play');
+const icoPause   = $('ico-pause');
+const progressBg = $('progress-bar-bg');
+const progFill   = $('progress-bar-fill');
+const timeCur    = $('time-cur');
+const timeTotal  = $('time-total');
+const sfStatus   = $('sf-status');
+const trackSel   = $('track-select');
+const tempoRange = $('tempo-range');
+const tempoVal   = $('tempo-val');
+const themeBtn   = $('theme-btn');
+const moonIco    = $('moon-ico');
+const sunIco     = $('sun-ico');
+const themeLbl   = $('theme-lbl');
 
-// ── State ──
-let api          = null;
-let score        = null;
-let isPlaying    = false;
-let sfReady      = false;
-let loopOn       = false;
-let totalMs      = 0;
-let isLight      = false;
-// 현재 재생 중인 트랙 인덱스 (-1 = 전체)
-let playingTrackIdx = -1;
-// 사이드바에서 보고 있는 트랙 인덱스
-let viewTrackIdx    = -1; // -1 = 전체
+let api      = null;
+let score    = null;
+let loopOn   = false;
+let isLight  = false;
+let prevTime = -1;
 
 // ── Helpers ──
-function fmtTime(ms) {
-  const s = Math.floor((ms || 0) / 1000);
-  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+function fmt(ms) {
+  const s = (ms / 1000) | 0;
+  return ((s / 60) | 0) + ':' + String(s % 60).padStart(2, '0');
 }
 
-function setPlayIcon(playing) {
-  iconPlay.style.display  = playing ? 'none' : '';
-  iconPause.style.display = playing ? '' : 'none';
-  playPauseBtn.title = playing ? '일시정지' : '재생';
+// Playing 상태인지 — alphaTab.synth.PlayerState.Playing === 1
+function isStatePlaying(state) {
+  try { return state === alphaTab.synth.PlayerState.Playing; } catch(e) { return state === 1; }
 }
 
-function updateTrackPlayBtns() {
-  document.querySelectorAll('.track-play-btn').forEach((btn, i) => {
-    const active = isPlaying && playingTrackIdx === i;
-    btn.classList.toggle('playing', active);
-    // icon swap per button
-    const svgPlay  = btn.querySelector('.tpb-play');
-    const svgPause = btn.querySelector('.tpb-pause');
-    if (svgPlay)  svgPlay.style.display  = active ? 'none' : '';
-    if (svgPause) svgPause.style.display = active ? '' : 'none';
-  });
+function syncPlayBtn(playing) {
+  icoPlay.style.display  = playing ? 'none' : '';
+  icoPause.style.display = playing ? '' : 'none';
+  playBtn.title = playing ? '일시정지' : '재생';
 }
 
-// ── Init alphaTab ──
+// ── Init ──
 function initAlphaTab() {
   const settings = {
     core: { engine: 'svg', logLevel: 0 },
@@ -412,190 +335,155 @@ function initAlphaTab() {
     }
   };
 
-  api = new alphaTab.AlphaTabApi(document.getElementById('at-main'), settings);
+  api = new alphaTab.AlphaTabApi($('at-main'), settings);
 
+  // ── Score loaded ──
   api.scoreLoaded.on(s => {
     score = s;
-    renderTrackList(s);
+    buildTrackSidebar(s);
+    buildTrackDropdown(s);
     updateInfoBar(s);
     printBtn.disabled = false;
     loadingEl.classList.add('hidden');
     dropZone.classList.add('hidden');
     playerBar.classList.remove('hidden');
-    // 전체 트랙 렌더링이 기본
-    viewTrackIdx = -1;
-    // play 버튼은 sf 로딩 완료 후 활성화
-    playPauseBtn.disabled = !sfReady;
     loopBtn.disabled = false;
+    trackSel.disabled = false;
+    // play-btn는 playerReady 이후에 활성화
   });
 
   api.renderStarted.on(() => loadingEl.classList.remove('hidden'));
   api.renderFinished.on(() => loadingEl.classList.add('hidden'));
 
-  api.soundFontLoaded.on(() => {
-    sfReady = true;
+  // SoundFont 로딩 퍼센트 — 공식 이벤트: soundFontLoad (단수)
+  api.soundFontLoad.on(e => {
+    const pct = Math.floor((e.loaded / e.total) * 100);
+    sfStatus.textContent = `SF ${pct}%`;
+  });
+
+  // playerReady: SF + MIDI 준비 완료 → 버튼 활성화
+  api.playerReady.on(() => {
     sfStatus.textContent = '';
-    if (score) playPauseBtn.disabled = false;
-  });
-  api.soundFontLoadFailed.on(() => {
-    sfStatus.textContent = '⚠ SoundFont 로드 실패';
+    playBtn.disabled = false;
+    stopBtn.disabled = false;
   });
 
-  // ★ 재생 상태 변화 → 버튼 아이콘 즉시 전환
+  // ★ playerStateChanged: 재생/일시정지/정지 아이콘 전환
   api.playerStateChanged.on(e => {
-    const PS = alphaTab.synth ? alphaTab.synth.PlayerState : null;
-    const playing = PS
-      ? e.state === PS.Playing
-      : (e.state === 1); // fallback numeric
-    isPlaying = playing;
-    setPlayIcon(playing);
-    stopBtn.disabled = !playing && e.state === 0; // Stopped = 0
-    updateTrackPlayBtns();
+    const playing = isStatePlaying(e.state);
+    syncPlayBtn(playing);
+    // stopped(e.stopped===true) 면 stop 버튼도 비활성
+    if (e.stopped) {
+      stopBtn.disabled = true;
+      progFill.style.width = '0%';
+      timeCur.textContent = '0:00';
+      prevTime = -1;
+    } else {
+      stopBtn.disabled = false;
+    }
   });
 
-  // ★ 재생 위치 → 프로그레스 바 업데이트
+  // ★ playerPositionChanged: 진행 바 업데이트
   api.playerPositionChanged.on(e => {
-    const cur = e.currentTime || 0;
-    const tot = (e.endTime > 0 ? e.endTime : totalMs) || 1;
-    totalMs = e.endTime > 0 ? e.endTime : totalMs;
-    const pct = Math.min(100, (cur / tot) * 100);
-    progressFill.style.width = pct + '%';
-    timeCur.textContent   = fmtTime(cur);
-    timeTotal.textContent = fmtTime(tot);
+    const cur = e.currentTime;
+    const end = e.endTime;
+    // 초 단위로만 갱신
+    const curSec = (cur / 1000) | 0;
+    if (curSec !== prevTime) {
+      prevTime = curSec;
+      timeCur.textContent  = fmt(cur);
+      timeTotal.textContent = fmt(end);
+    }
+    // 진행 바는 매 이벤트마다 부드럽게
+    if (end > 0) progFill.style.width = Math.min(100, (cur / end) * 100) + '%';
   });
 
+  // 재생 완료
   api.playerFinished.on(() => {
-    isPlaying = false;
-    setPlayIcon(false);
-    progressFill.style.width = '0%';
+    syncPlayBtn(false);
+    progFill.style.width = '0%';
     timeCur.textContent = '0:00';
     stopBtn.disabled = true;
-    playingTrackIdx = -1;
-    nowPlaying.textContent = '';
-    updateTrackPlayBtns();
+    prevTime = -1;
   });
 
   api.error.on(err => {
     loadingEl.classList.add('hidden');
-    alert('파일 로드 실패: ' + (err.message || err));
+    alert('파일 로드 실패: ' + (err.message || String(err)));
   });
 }
 
-// ── Sidebar track list ──
-function renderTrackList(s) {
+// ── Sidebar ──
+function buildTrackSidebar(s) {
   trackList.innerHTML = '';
   s.tracks.forEach((track, i) => {
     const item = document.createElement('div');
     item.className = 'track-item' + (i === 0 ? ' active' : '');
-    item.dataset.idx = i;
-
-    // 트랙 이름 클릭 → 해당 트랙 악보 보기
-    const label = document.createElement('div');
-    label.className = 'track-label';
-    label.innerHTML = `<span class="track-num">${i + 1}</span><span class="track-name">${track.name || '트랙 ' + (i + 1)}</span>`;
-    label.addEventListener('click', () => {
+    item.innerHTML = `<span class="track-num">${i + 1}</span><span class="track-name">${track.name || '트랙 ' + (i + 1)}</span>`;
+    item.addEventListener('click', () => {
       document.querySelectorAll('.track-item').forEach(el => el.classList.remove('active'));
       item.classList.add('active');
-      viewTrackIdx = i;
+      // dropdown sync
+      trackSel.value = String(i);
       api.renderTracks([s.tracks[i]]);
     });
-
-    // 트랙별 재생 버튼
-    const tpBtn = document.createElement('button');
-    tpBtn.className = 'track-play-btn';
-    tpBtn.disabled = !sfReady;
-    tpBtn.title = `트랙 ${i + 1} 재생`;
-    tpBtn.innerHTML = `
-      <svg class="tpb-play" viewBox="0 0 24 24">
-        <path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" fill="currentColor"/>
-      </svg>
-      <svg class="tpb-pause" viewBox="0 0 24 24" style="display:none">
-        <rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/>
-        <rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/>
-      </svg>`;
-
-    tpBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      handleTrackPlay(i, track, tpBtn);
-    });
-
-    // sf 로드 완료 후 버튼 활성화 반영
-    if (!sfReady) {
-      const sfWatcher = setInterval(() => {
-        if (sfReady) { tpBtn.disabled = false; clearInterval(sfWatcher); }
-      }, 300);
-    }
-
-    item.appendChild(label);
-    item.appendChild(tpBtn);
     trackList.appendChild(item);
   });
 }
 
-// ── 트랙별 재생 핸들러 ──
-function handleTrackPlay(idx, track, btn) {
-  if (!api || !score) return;
-
-  // 같은 트랙을 누른 경우: 재생 중이면 일시정지, 아니면 재개
-  if (playingTrackIdx === idx) {
-    if (isPlaying) {
-      api.pausePlayer();
-    } else {
-      api.playPause();
-    }
-    return;
-  }
-
-  // 다른 트랙: 정지 후 해당 트랙 렌더링 → 재생
-  if (isPlaying) api.stop();
-
-  playingTrackIdx = idx;
-  nowPlaying.textContent = track.name || `트랙 ${idx + 1}`;
-
-  // 악보도 해당 트랙으로 전환
-  document.querySelectorAll('.track-item').forEach((el, i) => {
-    el.classList.toggle('active', i === idx);
+// ── Player bar 트랙 드롭다운 ──
+function buildTrackDropdown(s) {
+  trackSel.innerHTML = '<option value="-1">전체</option>';
+  s.tracks.forEach((track, i) => {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = `${i + 1}. ${track.name || '트랙 ' + (i + 1)}`;
+    trackSel.appendChild(opt);
   });
-  viewTrackIdx = idx;
-
-  // renderTracks 후 재생 시작
-  api.renderTracks([score.tracks[idx]]);
-  // renderFinished 이후 재생
-  const onReady = () => {
-    api.renderFinished.off(onReady);
-    api.playPause();
-  };
-  api.renderFinished.on(onReady);
+  trackSel.value = '-1';
 }
+
+trackSel.addEventListener('change', () => {
+  if (!api || !score) return;
+  const idx = parseInt(trackSel.value);
+  // sidebar sync
+  document.querySelectorAll('.track-item').forEach((el, i) => el.classList.toggle('active', i === idx));
+  if (idx === -1) {
+    api.renderTracks(score.tracks); // 전체
+  } else {
+    api.renderTracks([score.tracks[idx]]);
+  }
+});
 
 // ── Info bar ──
 function updateInfoBar(s) {
-  document.getElementById('i-title').textContent  = s.title  || '—';
-  document.getElementById('i-artist').textContent = s.artist || '—';
-  document.getElementById('i-album').textContent  = s.album  || '—';
-  document.getElementById('i-tracks').textContent = s.tracks.length;
-  document.getElementById('i-bars').textContent   = s.masterBars.length;
+  $('i-title').textContent  = s.title  || '—';
+  $('i-artist').textContent = s.artist || '—';
+  $('i-album').textContent  = s.album  || '—';
+  $('i-tracks').textContent = s.tracks.length;
+  $('i-bars').textContent   = s.masterBars.length;
   infoBar.classList.remove('hidden');
 }
 
 // ── Load file ──
 function loadFile(file) {
   if (!api) initAlphaTab();
-  if (isPlaying) { api.stop(); isPlaying = false; setPlayIcon(false); }
+  if (api) { try { api.stop(); } catch(e) {} }
   fileNameEl.textContent = file.name;
   dropZone.classList.add('hidden');
   loadingEl.classList.remove('hidden');
   printBtn.disabled = true;
-  playPauseBtn.disabled = true;
+  playBtn.disabled = true;
   stopBtn.disabled = true;
   loopBtn.disabled = true;
-  progressFill.style.width = '0%';
+  trackSel.disabled = true;
+  trackSel.innerHTML = '<option value="-1">전체</option>';
+  progFill.style.width = '0%';
   timeCur.textContent = '0:00';
   timeTotal.textContent = '0:00';
-  nowPlaying.textContent = '';
-  sfStatus.textContent = sfReady ? '' : 'SoundFont 로딩 중...';
-  playingTrackIdx = -1;
-  viewTrackIdx = -1;
+  sfStatus.textContent = 'SoundFont 로딩 중...';
+  syncPlayBtn(false);
+  prevTime = -1;
   const reader = new FileReader();
   reader.onload = e => api.load(new Uint8Array(e.target.result));
   reader.readAsArrayBuffer(file);
@@ -603,57 +491,38 @@ function loadFile(file) {
 
 fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
 scoreWrap.addEventListener('dragover', e => e.preventDefault());
-scoreWrap.addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
-
-// ── Global Play/Pause (하단 버튼) ──
-playPauseBtn.addEventListener('click', () => {
-  if (!api) return;
-  if (isPlaying) {
-    api.pausePlayer();
-  } else {
-    // 특정 트랙이 선택된 상태라면 그 트랙 재생, 아니면 현재 렌더된 트랙
-    api.playPause();
-    if (playingTrackIdx < 0 && score) {
-      nowPlaying.textContent = viewTrackIdx >= 0
-        ? (score.tracks[viewTrackIdx].name || `트랙 ${viewTrackIdx + 1}`)
-        : '전체';
-    }
-  }
+scoreWrap.addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
 });
+
+// ── Play / Pause ──
+playBtn.addEventListener('click', () => { if (api) api.playPause(); });
 
 // ── Stop ──
-stopBtn.addEventListener('click', () => {
-  if (!api) return;
-  api.stop();
-  isPlaying = false;
-  setPlayIcon(false);
-  progressFill.style.width = '0%';
-  timeCur.textContent = '0:00';
-  stopBtn.disabled = true;
-  playingTrackIdx = -1;
-  nowPlaying.textContent = '';
-  updateTrackPlayBtns();
-});
+stopBtn.addEventListener('click', () => { if (api) api.stop(); });
 
 // ── Loop ──
 loopBtn.addEventListener('click', () => {
   loopOn = !loopOn;
-  try { if (api) api.isLooping = loopOn; } catch (e) {}
+  api.isLooping = loopOn;
   loopBtn.classList.toggle('on', loopOn);
 });
 
-// ── Seek ──
+// ── Seek (클릭 위치로 이동) ──
 progressBg.addEventListener('click', e => {
-  if (!api || !score || totalMs === 0) return;
+  if (!api || !score) return;
   const ratio = (e.clientX - progressBg.getBoundingClientRect().left) / progressBg.offsetWidth;
-  try { api.tickPosition = Math.floor(ratio * score.masterBars.length * 3840); } catch(e) {}
+  // alphaTab seek: tickPosition 사용
+  const totalTicks = score.masterBars.length * 3840;
+  api.tickPosition = Math.floor(Math.max(0, Math.min(1, ratio)) * totalTicks);
 });
 
 // ── Tempo ──
 tempoRange.addEventListener('input', () => {
   const v = parseInt(tempoRange.value);
   tempoVal.textContent = v + '%';
-  try { if (api) api.playbackSpeed = v / 100; } catch(e) {}
+  if (api) api.playbackSpeed = v / 100;
 });
 
 // ── Zoom ──
@@ -667,40 +536,37 @@ zoomRange.addEventListener('input', () => {
 themeBtn.addEventListener('click', () => {
   isLight = !isLight;
   document.documentElement.classList.toggle('light', isLight);
-  iconMoon.style.display = isLight ? 'none' : '';
-  iconSun.style.display  = isLight ? '' : 'none';
-  themeLabel.textContent = isLight ? '다크' : '라이트';
+  moonIco.style.display = isLight ? 'none' : '';
+  sunIco.style.display  = isLight ? '' : 'none';
+  themeLbl.textContent  = isLight ? '다크' : '라이트';
 });
 
 // ── Print ──
-const PRINT_WIDTH = 720;
+const PW = 720;
 printBtn.addEventListener('click', () => {
   if (!api || !score) { window.print(); return; }
-  const wasPlaying = isPlaying;
-  if (wasPlaying) api.pausePlayer();
   printBtn.disabled = true;
   printBtn.textContent = '준비 중...';
-  const atMain = document.getElementById('at-main');
-  const prevScale = api.settings.display.scale;
-  atMain.style.width = PRINT_WIDTH + 'px';
-  atMain.style.maxWidth = PRINT_WIDTH + 'px';
+  const el = $('at-main');
+  const prev = api.settings.display.scale;
+  el.style.width = PW + 'px';
+  el.style.maxWidth = PW + 'px';
   api.settings.display.scale = 0.9;
   api.updateSettings();
-  const onDone = () => {
-    api.renderFinished.off(onDone);
+  const done = () => {
+    api.renderFinished.off(done);
     setTimeout(() => {
       window.print();
-      atMain.style.width = '';
-      atMain.style.maxWidth = '';
-      api.settings.display.scale = prevScale;
+      el.style.width = '';
+      el.style.maxWidth = '';
+      api.settings.display.scale = prev;
       api.updateSettings();
       api.render();
-      if (wasPlaying) api.playPause();
       printBtn.disabled = false;
       printBtn.innerHTML = `<svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" style="width:12px;height:12px;flex-shrink:0"><path d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" stroke-linecap="round" stroke-linejoin="round"/></svg> PDF 인쇄`;
     }, 400);
   };
-  api.renderFinished.on(onDone);
+  api.renderFinished.on(done);
   api.render();
 });
 
