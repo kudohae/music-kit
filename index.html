@@ -22,59 +22,67 @@
   --ink: #111111;
 }
 
-html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 13px; overflow: hidden; }
-#app { display: flex; flex-direction: column; height: 100vh; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 13px; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+#app { display: flex; flex-direction: column; height: 100dvh; }
 
 /* ── Header ── */
-#header { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; }
-#logo { font-family: var(--serif); font-style: italic; font-size: 19px; color: var(--accent); flex-shrink: 0; }
-#file-label { display: flex; align-items: center; gap: 6px; padding: 5px 11px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
+#header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+#logo { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--accent); flex-shrink: 0; }
+
+#file-label { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 11px; color: var(--text-dim); flex-shrink: 0; touch-action: manipulation; }
 #file-label:hover { border-color: var(--accent); color: var(--accent); }
-#file-label svg { width: 12px; height: 12px; stroke: currentColor; fill: none; }
+#file-label svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
 #file-input { display: none; }
-#file-name { font-size: 11px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; }
+#file-name { font-size: 11px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
 .spacer { flex: 1; }
 
-.hbtn { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--text-dim); font-family: var(--mono); font-size: 11px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-.hbtn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
+.hbtn { display: flex; align-items: center; gap: 5px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--text-dim); font-family: var(--mono); font-size: 11px; cursor: pointer; white-space: nowrap; flex-shrink: 0; touch-action: manipulation; }
+.hbtn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
 .hbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .hbtn:disabled { opacity: 0.3; cursor: not-allowed; }
 .hbtn.accent { border-color: var(--accent); color: var(--accent); }
 .hbtn.accent:hover:not(:disabled) { background: var(--accent); color: #000; }
 
+/* 햄버거 버튼 (트랙 드로어 열기) */
+#drawer-btn { display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--text-dim); cursor: pointer; flex-shrink: 0; touch-action: manipulation; }
+#drawer-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
+#drawer-btn:hover { border-color: var(--accent); color: var(--accent); }
+
 #zoom-range { width: 68px; accent-color: var(--accent); }
 #zoom-val { font-size: 11px; color: var(--text-muted); min-width: 30px; }
+#zoom-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
 /* ── Main ── */
-#main { display: flex; flex: 1; overflow: hidden; }
+#main { display: flex; flex: 1; overflow: hidden; position: relative; }
 
-/* ── Sidebar ── */
-#sidebar { width: 186px; flex-shrink: 0; border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
+/* ── Sidebar (데스크탑: 고정 패널 / 모바일: 오버레이 드로어) ── */
+#sidebar { width: 186px; flex-shrink: 0; border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; transition: transform 0.25s ease; }
 #sidebar-header { padding: 9px 11px 6px; font-size: 9px; letter-spacing: 0.13em; color: var(--text-muted); border-bottom: 1px solid var(--border); text-transform: uppercase; }
-#track-list { flex: 1; overflow-y: auto; padding: 4px 0; }
+#track-list { flex: 1; overflow-y: auto; padding: 4px 0; -webkit-overflow-scrolling: touch; }
 #track-list::-webkit-scrollbar { width: 3px; }
 #track-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-.track-item { display: flex; align-items: center; padding: 7px 11px; cursor: pointer; border-left: 2px solid transparent; gap: 7px; }
+.track-item { display: flex; align-items: center; padding: 10px 11px; cursor: pointer; border-left: 2px solid transparent; gap: 7px; touch-action: manipulation; }
 .track-item:hover { background: var(--surface2); }
 .track-item.active { border-left-color: var(--accent); background: var(--surface2); }
 .track-num { font-size: 9px; color: var(--text-muted); min-width: 13px; flex-shrink: 0; }
 .track-name { font-size: 11px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .track-item.active .track-name { color: var(--accent); }
 
+/* 드로어 오버레이 */
+#drawer-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; }
+#drawer-overlay.open { display: block; }
+
 /* ── Score ── */
-#score-wrap { flex: 1; overflow: auto; background: var(--bg); position: relative; }
+#score-wrap { flex: 1; overflow: auto; background: var(--bg); position: relative; -webkit-overflow-scrolling: touch; }
 #score-wrap::-webkit-scrollbar { width: 5px; height: 5px; }
 #score-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-#at-main { padding: 24px 48px 24px 24px; min-height: 100%; }
+#at-main { padding: 20px 40px 20px 20px; min-height: 100%; }
 
-/* alphaTab SVG ink color - dark/light mode */
+/* alphaTab SVG ink */
 #at-main svg text { fill: var(--ink) !important; }
-#at-main svg line,
-#at-main svg path { stroke: var(--ink) !important; }
+#at-main svg line, #at-main svg path { stroke: var(--ink) !important; }
 #at-main svg rect[fill]:not([fill="none"]) { fill: var(--ink) !important; }
 #at-main svg polygon { fill: var(--ink) !important; stroke: var(--ink) !important; }
-
-/* cursor/highlight - keep accent colors */
 .at-cursor-bar { background: rgba(200,240,90,0.15) !important; }
 .at-cursor-beat { background: rgba(200,240,90,0.7) !important; width: 2px !important; }
 .at-selection div { background: rgba(200,240,90,0.2) !important; }
@@ -93,29 +101,25 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── Player bar ── */
-#player-bar { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+#player-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
 #player-bar.hidden { display: none; }
 
-/* round buttons */
-.rbtn { border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rbtn { border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; touch-action: manipulation; }
 .rbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .rbtn:disabled { opacity: 0.3; cursor: not-allowed; }
-#stop-btn { width: 30px; height: 30px; }
-#stop-btn svg { width: 12px; height: 12px; }
-#play-btn { width: 38px; height: 38px; border-color: var(--accent); color: var(--accent); }
+#stop-btn { width: 34px; height: 34px; }
+#stop-btn svg { width: 13px; height: 13px; }
+#play-btn { width: 42px; height: 42px; border-color: var(--accent); color: var(--accent); }
 #play-btn:hover:not(:disabled) { background: var(--accent); color: #000; }
-#play-btn svg { width: 16px; height: 16px; }
+#play-btn svg { width: 18px; height: 18px; }
 #play-btn:disabled { border-color: var(--border); color: var(--text-dim); opacity: 0.3; }
 
-
-/* progress */
-#progress-wrap { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-#progress-bar-bg { width: 100%; height: 4px; background: var(--border); border-radius: 2px; cursor: pointer; position: relative; }
-#progress-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; pointer-events: none; }
+#progress-wrap { flex: 1; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+#progress-bar-bg { width: 100%; height: 5px; background: var(--border); border-radius: 3px; cursor: pointer; position: relative; touch-action: none; }
+#progress-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 0%; pointer-events: none; }
 #time-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); }
 #sf-status { font-size: 10px; color: var(--text-muted); flex-shrink: 0; }
 
-/* loop + tempo */
 #loop-btn { font-size: 11px; }
 #loop-btn.on { border-color: var(--accent); color: var(--accent); }
 #tempo-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
@@ -124,11 +128,52 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 #tempo-val { font-size: 10px; color: var(--text-dim); min-width: 32px; }
 
 /* ── Info bar ── */
-#info-bar { padding: 5px 14px; border-top: 1px solid var(--border); background: var(--surface); display: flex; gap: 16px; align-items: center; flex-shrink: 0; font-size: 10px; }
+#info-bar { padding: 5px 12px; border-top: 1px solid var(--border); background: var(--surface); display: flex; gap: 12px; align-items: center; flex-shrink: 0; font-size: 10px; overflow-x: auto; white-space: nowrap; }
 #info-bar.hidden { display: none; }
 .ik { color: var(--text-muted); }
 .iv { color: var(--text-dim); margin-left: 3px; }
 
+/* ══════════════════════════════
+   모바일 (≤ 640px)
+══════════════════════════════ */
+@media (max-width: 640px) {
+  /* 헤더: 로고 + 파일열기 + spacer + 아이콘들만 */
+  #zoom-group { display: none; }           /* zoom 슬라이더 숨김 (핀치줌 사용) */
+  #theme-lbl  { display: none; }           /* 테마 버튼 텍스트 숨김 */
+  .hbtn#print-btn span { display: none; }  /* 인쇄 버튼 텍스트 숨김 */
+  #file-name  { display: none; }           /* 파일명 숨김 (공간 절약) */
+
+  /* 햄버거 버튼 표시 */
+  #drawer-btn { display: flex; }
+
+  /* 사이드바: 오버레이 드로어로 전환 */
+  #sidebar {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    z-index: 200;
+    width: 220px;
+    transform: translateX(-100%);
+    border-right: 1px solid var(--border);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.4);
+  }
+  #sidebar.open { transform: translateX(0); }
+
+  /* 플레이어 바: 템포 숨김 (화면 좁음) */
+  #tempo-wrap { display: none; }
+
+  /* 진행 바 터치 영역 확대 */
+  #progress-bar-bg { height: 6px; }
+
+  /* 버튼 터치 타깃 확대 */
+  #stop-btn { width: 38px; height: 38px; }
+  #play-btn  { width: 46px; height: 46px; }
+
+  /* 악보 패딩 축소 */
+  #at-main { padding: 12px 16px 12px 12px; }
+
+  /* 인포바 숨김 (화면 절약) */
+  #info-bar { display: none !important; }
+}
 
 </style>
 </head>
@@ -138,6 +183,10 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   <!-- Header -->
   <div id="header">
     <div id="logo">GP Viewer</div>
+    <!-- 모바일: 트랙 드로어 열기 -->
+    <button id="drawer-btn" aria-label="트랙 목록">
+      <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
     <label id="file-label" for="file-input">
       <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       파일 열기
@@ -145,9 +194,11 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
     <input type="file" id="file-input" accept=".gp,.gp3,.gp4,.gp5,.gpx,.gp7">
     <span id="file-name">파일을 선택하세요</span>
     <div class="spacer"></div>
-    <label style="font-size:10px;color:var(--text-muted)">zoom</label>
-    <input type="range" id="zoom-range" min="50" max="200" value="100" step="10">
-    <span id="zoom-val">100%</span>
+    <div id="zoom-group">
+      <label style="font-size:10px;color:var(--text-muted)">zoom</label>
+      <input type="range" id="zoom-range" min="50" max="200" value="100" step="10">
+      <span id="zoom-val">100%</span>
+    </div>
     <button class="hbtn" id="theme-btn">
       <svg id="moon-ico" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <svg id="sun-ico" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor" style="display:none"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -155,12 +206,14 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
     </button>
     <button class="hbtn accent" id="print-btn" disabled>
       <svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      PDF 인쇄
+      <span>PDF 인쇄</span>
     </button>
   </div>
 
   <!-- Main -->
   <div id="main">
+    <!-- 모바일 드로어 오버레이 -->
+    <div id="drawer-overlay"></div>
     <div id="sidebar">
       <div id="sidebar-header">트랙</div>
       <div id="track-list"></div>
@@ -480,6 +533,39 @@ themeBtn.addEventListener('click', () => {
   sunIco.style.display  = isLight ? '' : 'none';
   themeLbl.textContent  = isLight ? '다크' : '라이트';
 });
+
+// ── 모바일 드로어 ──
+const drawerBtn     = $('drawer-btn');
+const sidebar       = $('sidebar');
+const drawerOverlay = $('drawer-overlay');
+
+function openDrawer()  { sidebar.classList.add('open'); drawerOverlay.classList.add('open'); }
+function closeDrawer() { sidebar.classList.remove('open'); drawerOverlay.classList.remove('open'); }
+
+drawerBtn.addEventListener('click', () => sidebar.classList.contains('open') ? closeDrawer() : openDrawer());
+drawerOverlay.addEventListener('click', closeDrawer);
+
+// 트랙 클릭 시 모바일에서 드로어 자동 닫기
+trackList.addEventListener('click', () => {
+  if (window.innerWidth <= 640) closeDrawer();
+});
+
+// ── 진행 바 터치 seek ──
+progressBg.addEventListener('touchstart', e => {
+  e.preventDefault();
+  seekToTouch(e.touches[0]);
+}, { passive: false });
+progressBg.addEventListener('touchmove', e => {
+  e.preventDefault();
+  seekToTouch(e.touches[0]);
+}, { passive: false });
+
+function seekToTouch(touch) {
+  if (!api || !score) return;
+  const rect = progressBg.getBoundingClientRect();
+  const ratio = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
+  api.tickPosition = Math.floor(ratio * score.masterBars.length * 3840);
+}
 
 // ── 스페이스바 재생/일시정지 ──
 document.addEventListener('keydown', e => {
