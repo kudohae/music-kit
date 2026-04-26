@@ -1,0 +1,14 @@
+{
+  "name": "music-kit",
+  "version": "1.0.0",
+  "description": "MusicKit - Sheet music viewer, IR mixer, chord charts, setlists, capo calculator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}
