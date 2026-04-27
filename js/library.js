@@ -115,12 +115,16 @@ async function confirmUpload() {
                      || first.name.replace(/\.[^.]+$/, '');
 
     // Upload each file to Supabase Storage
+    // Use index-based safe paths to avoid special characters (Korean, spaces, etc.)
     const uploadedFiles = [];
-    for (const file of fileList) {
-      const path = `${songId}/${file.name}`;
-      const ab   = await file.arrayBuffer();
-      await storage.upload(path, ab, file.type || guessMime(file.name));
-      uploadedFiles.push({ name: file.name, path, mimeType: file.type || guessMime(file.name) });
+    for (let i = 0; i < fileList.length; i++) {
+      const file    = fileList[i];
+      const ext     = file.name.split('.').pop().toLowerCase();
+      const path    = `${songId}/${i}.${ext}`;   // safe ASCII-only path
+      const mime    = file.type || guessMime(file.name);
+      const ab      = await file.arrayBuffer();
+      await storage.upload(path, ab, mime);
+      uploadedFiles.push({ name: file.name, path, mimeType: mime });
     }
 
     const song = {
