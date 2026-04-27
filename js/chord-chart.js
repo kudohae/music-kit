@@ -1,5 +1,5 @@
-import { idb }   from './db.js';
-import { on }    from './app.js';
+import { db }  from './db.js';
+import { on }   from './app.js';
 
 const TYPES = ['Intro','Verse','Pre-Chorus','Chorus','Bridge','Solo','Outro','Custom'];
 
@@ -17,8 +17,8 @@ export function initChords() {
 }
 
 async function loadCharts() {
-  charts = await idb.getAll('chords');
-  renderList();
+  try { charts = await db.getChords(); renderList(); }
+  catch (e) { alert('로드 실패: ' + e.message); }
 }
 
 function renderList() {
@@ -75,18 +75,21 @@ async function saveChart() {
     sections: sections.map(s => ({ id: s.id, type: s.type, name: s.name, chords: s.chords, notes: s.notes })),
     createdAt: editing.createdAt || new Date().toISOString(),
   };
-  await idb.put('chords', payload);
-  const idx = charts.findIndex(c => c.id === payload.id);
-  if (idx !== -1) charts[idx] = payload; else charts.push(payload);
-  closeEditor();
-  renderList();
+  try {
+    await db.upsertChord(payload);
+    const idx = charts.findIndex(c => c.id === payload.id);
+    if (idx !== -1) charts[idx] = payload; else charts.unshift(payload);
+    closeEditor(); renderList();
+  } catch (e) { alert('저장 실패: ' + e.message); }
 }
 
 async function deleteChart(id) {
   if (!confirm('이 기록지를 삭제하시겠습니까?')) return;
-  await idb.del('chords', id);
-  charts = charts.filter(c => c.id !== id);
-  renderList();
+  try {
+    await db.deleteChord(id);
+    charts = charts.filter(c => c.id !== id);
+    renderList();
+  } catch (e) { alert('삭제 실패: ' + e.message); }
 }
 
 function addSection() {
@@ -113,23 +116,22 @@ function renderSections() {
     </div>
   `).join('');
 
-  container.querySelectorAll('.section-type-select').forEach(el => {
-    el.addEventListener('change', () => { sections[+el.dataset.idx].type = el.value; });
-  });
-  container.querySelectorAll('.section-name-input').forEach(el => {
-    el.addEventListener('input', () => { sections[+el.dataset.idx].name = el.value; });
-  });
+  container.querySelectorAll('.section-type-select').forEach(el =>
+    el.addEventListener('change', () => { sections[+el.dataset.idx].type = el.value; })
+  );
+  container.querySelectorAll('.section-name-input').forEach(el =>
+    el.addEventListener('input', () => { sections[+el.dataset.idx].name = el.value; })
+  );
   container.querySelectorAll('.section-chords-input').forEach(el => {
     el.addEventListener('input', () => { sections[+el.dataset.idx].chords = el.value; autoResize(el); });
     autoResize(el);
   });
-  container.querySelectorAll('.section-notes-input').forEach(el => {
-    el.addEventListener('input', () => { sections[+el.dataset.idx].notes = el.value; });
-  });
-  container.querySelectorAll('.section-delete').forEach(el => {
-    el.addEventListener('click', () => { sections.splice(+el.dataset.idx, 1); renderSections(); });
-  });
-
+  container.querySelectorAll('.section-notes-input').forEach(el =>
+    el.addEventListener('input', () => { sections[+el.dataset.idx].notes = el.value; })
+  );
+  container.querySelectorAll('.section-delete').forEach(el =>
+    el.addEventListener('click', () => { sections.splice(+el.dataset.idx, 1); renderSections(); })
+  );
   container.querySelectorAll('.section-card').forEach(card => {
     card.addEventListener('dragstart', e => { dragSrc = +card.dataset.idx; e.dataTransfer.effectAllowed = 'move'; });
     card.addEventListener('dragover',  e => { e.preventDefault(); card.style.outline = '1px solid var(--accent)'; });

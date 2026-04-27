@@ -1,13 +1,11 @@
 import { on, emit } from './app.js';
+import { storage }  from './db.js';
 
 const state = {
   song: null, fileType: null,
-  blobUrls: [],     // revoke on song change
-  pdfDoc:   null,
-  pages:    [],     // blob URLs for JPG
+  pdfDoc: null, pages: [],
   currentPage: 1, totalPages: 0,
-  viewMode: 'single',
-  zoomPct:  100,
+  viewMode: 'single', zoomPct: 100,
   atApi: null, loopOn: false, prevTime: -1,
 };
 
@@ -26,7 +24,6 @@ export function initViewer() {
     rerenderCurrentPages();
   });
 
-  // Drag-to-open in viewer area
   const sheetView = document.getElementById('sheet-view');
   sheetView.addEventListener('dragover', e => e.preventDefault());
   sheetView.addEventListener('drop', e => {
@@ -35,7 +32,7 @@ export function initViewer() {
     if (f) openLocalFile(f);
   });
 
-  // GP player
+  // GP player controls
   document.getElementById('play-btn').addEventListener('click', () => state.atApi?.playPause());
   document.getElementById('stop-btn').addEventListener('click', () => state.atApi?.stop());
   document.getElementById('loop-btn').addEventListener('click', () => {
@@ -55,39 +52,29 @@ export function initViewer() {
     state.atApi.tickPosition = Math.floor(ratio * state.atApi.score.masterBars.length * 3840);
   });
 
-  on('open-song',          song  => openSongInViewer(song));
-  on('page-next',          ()    => perf.active ? perfNextPage() : nextPage());
-  on('page-prev',          ()    => perf.active ? perfPrevPage() : prevPage());
-  on('esc',                ()    => { if (perf.active) exitPerf(); });
-  on('start-performance',  opts  => startPerf(opts.setlist, opts.index ?? 0));
+  on('open-song',         song => openSongInViewer(song));
+  on('page-next',         ()   => perf.active ? perfNextPage() : nextPage());
+  on('page-prev',         ()   => perf.active ? perfPrevPage() : prevPage());
+  on('esc',               ()   => { if (perf.active) exitPerf(); });
+  on('start-performance', opts => startPerf(opts.setlist, opts.index ?? 0));
 
   document.getElementById('perf-exit').addEventListener('click', exitPerf);
 }
 
-export function openSongInViewer(song) {
-  // Revoke old blob URLs
-  state.blobUrls.forEach(u => URL.revokeObjectURL(u));
-  state.blobUrls = [];
-
-  state.song = song;
-  state.fileType = song.fileType;
+export async function openSongInViewer(song) {
+  state.song      = song;
+  state.fileType  = song.fileType;
   state.currentPage = 1;
   document.getElementById('viewer-song-name').textContent =
     song.title + (song.artist ? ' — ' + song.artist : '');
 
   if (song.fileType === 'gp') {
     showGPView();
-    const data = song.files[0].data;
-    loadGPData(data);
+    await loadGPFromStorage(song.files[0]);
   } else {
     showSheetView();
-    const urls = song.files.map(f => {
-      const blob = new Blob([f.data], { type: f.mimeType || 'application/octet-stream' });
-      const u = URL.createObjectURL(blob);
-      state.blobUrls.push(u);
-      return u;
-    });
-    if (song.fileType === 'pdf') loadPDF(urls[0]);
+    const urls = song.files.map(f => storage.url(f.path));
+    if (song.fileType === 'pdf') await loadPDF(urls[0]);
     else                         loadImages(urls);
   }
 }
@@ -106,46 +93,37 @@ function showGPView() {
 
 async function loadPDF(url) {
   try {
-    state.pdfDoc    = await pdfjsLib.getDocument(url).promise;
+    state.pdfDoc     = await pdfjsLib.getDocument(url).promise;
     state.totalPages = state.pdfDoc.numPages;
-    state.pages     = [];
+    state.pages      = [];
     await renderCurrentPages(getPageContainer());
   } catch (e) { alert('PDF 로드 실패: ' + e.message); }
 }
 
 function loadImages(urls) {
-  state.pdfDoc    = null;
-  state.pages     = urls;
+  state.pdfDoc     = null;
+  state.pages      = urls;
   state.totalPages = urls.length;
   renderCurrentPages(getPageContainer());
 }
 
 async function openLocalFile(file) {
-  const ext = file.name.split('.').pop().toLowerCase();
-  const data = await file.arrayBuffer();
-  const song = { title: file.name, artist: '', fileType: '', files: [{ name: file.name, data, mimeType: file.type }] };
+  const ext  = file.name.split('.').pop().toLowerCase();
+  const blob = new Blob([await file.arrayBuffer()], { type: file.type });
+  const url  = URL.createObjectURL(blob);
+
+  state.song      = { title: file.name, artist: '', fileType: '', files: [] };
+  state.currentPage = 1;
+  document.getElementById('viewer-song-name').textContent = file.name;
 
   if (ext === 'pdf') {
-    song.fileType = 'pdf'; showSheetView();
-    const blob = new Blob([data], { type: 'application/pdf' });
-    const url  = URL.createObjectURL(blob);
-    state.blobUrls.push(url);
-    state.song = song; state.fileType = 'pdf'; state.currentPage = 1;
-    document.getElementById('viewer-song-name').textContent = file.name;
-    await loadPDF(url);
+    state.fileType = 'pdf'; showSheetView(); await loadPDF(url);
   } else if (['jpg','jpeg','png','webp'].includes(ext)) {
-    song.fileType = 'jpg'; showSheetView();
-    const blob = new Blob([data], { type: file.type });
-    const url  = URL.createObjectURL(blob);
-    state.blobUrls.push(url);
-    state.song = song; state.fileType = 'jpg'; state.currentPage = 1;
-    document.getElementById('viewer-song-name').textContent = file.name;
-    loadImages([url]);
+    state.fileType = 'jpg'; showSheetView(); loadImages([url]);
   } else if (['gp','gp3','gp4','gp5','gpx','gp7'].includes(ext)) {
-    song.fileType = 'gp'; showGPView();
-    state.song = song; state.fileType = 'gp'; state.currentPage = 1;
-    document.getElementById('viewer-song-name').textContent = file.name;
-    loadGPData(data);
+    state.fileType = 'gp'; showGPView();
+    const ab = await file.arrayBuffer();
+    loadGPData(ab);
   }
 }
 
@@ -173,8 +151,8 @@ async function renderCurrentPages(container) {
   } else {
     for (const idx of pagesToShow.map(p => p - 1)) {
       if (idx >= state.pages.length) break;
-      const img   = document.createElement('img');
-      img.src     = state.pages[idx];
+      const img       = document.createElement('img');
+      img.src         = state.pages[idx];
       img.style.width = isDouble ? 'calc(50% - 6px)' : `${Math.min(100, scale * 100)}%`;
       container.appendChild(img);
     }
@@ -188,8 +166,7 @@ async function rerenderCurrentPages() {
 
 function updatePageInfo() {
   const end = state.viewMode === 'double'
-    ? Math.min(state.currentPage + 1, state.totalPages)
-    : state.currentPage;
+    ? Math.min(state.currentPage + 1, state.totalPages) : state.currentPage;
   document.getElementById('page-indicator').textContent =
     state.viewMode === 'double' && state.totalPages > 1
       ? `${state.currentPage}–${end} / ${state.totalPages}`
@@ -204,7 +181,6 @@ async function nextPage() {
     await rerenderCurrentPages();
   }
 }
-
 async function prevPage() {
   if (!state.totalPages) return;
   const step = state.viewMode === 'double' ? 2 : 1;
@@ -222,7 +198,7 @@ function setViewMode(mode) {
   rerenderCurrentPages();
 }
 
-// ── GP (alphaTab) ──────────────────────────────────────────
+// ── GP / alphaTab ──────────────────────────────────────────
 function ensureAlphaTab() {
   if (state.atApi) return;
   state.atApi = new alphaTab.AlphaTabApi(document.getElementById('at-main'), {
@@ -242,12 +218,12 @@ function ensureAlphaTab() {
     $('gp-loading').classList.add('hidden');
     $('gp-drop').classList.add('hidden');
     $('player-bar').classList.remove('hidden');
-    $('play-btn').disabled  = true;
-    $('loop-btn').disabled  = false;
+    $('play-btn').disabled = true;
+    $('loop-btn').disabled = false;
   });
   api.renderStarted.on(()  => $('gp-loading').classList.remove('hidden'));
   api.renderFinished.on(() => $('gp-loading').classList.add('hidden'));
-  api.soundFontLoad.on(e   => {
+  api.soundFontLoad.on(e => {
     $('sf-status').textContent = `SF ${Math.floor((e.loaded / e.total) * 100)}%`;
   });
   api.playerReady.on(() => {
@@ -284,6 +260,22 @@ function ensureAlphaTab() {
     $('stop-btn').disabled = true;
     state.prevTime = -1;
   });
+}
+
+async function loadGPFromStorage(file) {
+  ensureAlphaTab();
+  try { state.atApi.stop(); } catch(_) {}
+  document.getElementById('gp-loading').classList.remove('hidden');
+  document.getElementById('player-bar').classList.add('hidden');
+  try {
+    const res = await fetch(storage.url(file.path));
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const ab  = await res.arrayBuffer();
+    state.atApi.load(new Uint8Array(ab));
+  } catch (e) {
+    document.getElementById('gp-loading').classList.add('hidden');
+    alert('GP 로드 실패: ' + e.message);
+  }
 }
 
 function loadGPData(arrayBuffer) {
@@ -331,24 +323,14 @@ async function loadPerfSong() {
   state.fileType  = song.fileType;
   state.currentPage = 1;
 
-  // Revoke previous perf blob URLs
-  state.blobUrls.forEach(u => URL.revokeObjectURL(u));
-  state.blobUrls = [];
-
-  const urls = song.files.map(f => {
-    const blob = new Blob([f.data], { type: f.mimeType || 'application/octet-stream' });
-    const u = URL.createObjectURL(blob);
-    state.blobUrls.push(u);
-    return u;
-  });
-
   document.getElementById('perf-song-pos').textContent  = `${perf.songIndex + 1} / ${perf.setlist.length}`;
   document.getElementById('perf-song-name').textContent = song.title;
 
+  const urls = song.files.map(f => storage.url(f.path));
   if (song.fileType === 'pdf') {
-    state.pdfDoc    = await pdfjsLib.getDocument(urls[0]).promise;
+    state.pdfDoc     = await pdfjsLib.getDocument(urls[0]).promise;
     state.totalPages = state.pdfDoc.numPages;
-    state.pages     = [];
+    state.pages      = [];
   } else {
     state.pdfDoc    = null;
     state.pages     = urls;

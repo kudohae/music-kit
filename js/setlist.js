@@ -1,6 +1,6 @@
-import { idb }          from './db.js';
-import { on, emit }    from './app.js';
-import { getSongs }    from './library.js';
+import { db }          from './db.js';
+import { on, emit }   from './app.js';
+import { getSongs }   from './library.js';
 
 let setlists  = [];
 let allSongs  = [];
@@ -18,8 +18,10 @@ export function initSetlist() {
 }
 
 async function loadAll() {
-  [setlists, allSongs] = await Promise.all([idb.getAll('setlists'), idb.getAll('songs')]);
-  renderSetlistList();
+  try {
+    [setlists, allSongs] = await Promise.all([db.getSetlists(), db.getSongs()]);
+    renderSetlistList();
+  } catch (e) { alert('로드 실패: ' + e.message); }
 }
 
 function renderSetlistList() {
@@ -61,7 +63,7 @@ function closeEditor() {
 function songs() { return allSongs.length ? allSongs : getSongs(); }
 
 function renderLibrarySongs() {
-  const el = document.getElementById('sl-library-songs');
+  const el   = document.getElementById('sl-library-songs');
   const list = songs();
   if (!list.length) {
     el.innerHTML = '<div style="font-size:11px;color:var(--muted);padding:8px">라이브러리가 비어 있습니다.</div>';
@@ -128,20 +130,21 @@ function renderSetlistOrder() {
 
 async function saveSetlist() {
   const payload = {
-    id:        editingId || Date.now().toString(),
-    name:      document.getElementById('setlist-name').value.trim() || 'Untitled',
-    songs:     editSongs,
-    createdAt: new Date().toISOString(),
+    id:    editingId || Date.now().toString(),
+    name:  document.getElementById('setlist-name').value.trim() || 'Untitled',
+    songs: editSongs,
   };
-  await idb.put('setlists', payload);
-  const idx = setlists.findIndex(s => s.id === payload.id);
-  if (idx !== -1) setlists[idx] = payload; else setlists.push(payload);
-  editingId = payload.id;
-  renderSetlistList();
+  try {
+    await db.upsertSetlist(payload);
+    const idx = setlists.findIndex(s => s.id === payload.id);
+    if (idx !== -1) setlists[idx] = payload; else setlists.unshift(payload);
+    editingId = payload.id;
+    renderSetlistList();
+  } catch (e) { alert('저장 실패: ' + e.message); }
 }
 
 function startPerformance() {
-  const list = songs();
+  const list      = songs();
   const perfSongs = editSongs
     .map(id => list.find(s => s.id === id))
     .filter(s => s && s.fileType !== 'gp');

@@ -1,4 +1,4 @@
-import { idb }          from './db.js';
+import { db, storage }    from './db.js';
 import { navigate, emit } from './app.js';
 
 let songs = [];
@@ -28,8 +28,10 @@ export function initLibrary() {
 export function getSongs() { return songs; }
 
 async function loadSongs() {
-  songs = await idb.getAll('songs');
-  renderSongs();
+  try {
+    songs = await db.getSongs();
+    renderSongs();
+  } catch (e) { showError('라이브러리 로드 실패: ' + e.message); }
 }
 
 function renderSongs() {
@@ -64,10 +66,18 @@ function renderSongs() {
 
 async function deleteSong(id) {
   if (!confirm('이 곡을 삭제하시겠습니까?')) return;
-  await idb.del('songs', id);
-  songs = songs.filter(s => s.id !== id);
-  renderSongs();
-  emit('songs-changed', songs);
+  try {
+    // Delete storage files
+    const song  = songs.find(s => s.id === id);
+    if (song?.files?.length) {
+      const paths = song.files.map(f => f.path);
+      await storage.remove(paths);
+    }
+    await db.deleteSong(id);
+    songs = songs.filter(s => s.id !== id);
+    renderSongs();
+    emit('songs-changed', songs);
+  } catch (e) { showError('삭제 실패: ' + e.message); }
 }
 
 function openModal() {
@@ -84,8 +94,7 @@ function closeModal() {
 function updateFileLabel(files) {
   const el = document.getElementById('upload-file-names');
   el.textContent = !files.length ? '클릭 또는 드래그'
-    : files.length === 1 ? files[0].name
-    : `${files.length}개 파일 선택됨`;
+    : files.length === 1 ? files[0].name : `${files.length}개 파일 선택됨`;
 }
 
 async function confirmUpload() {
@@ -93,37 +102,40 @@ async function confirmUpload() {
   if (!input.files.length) { alert('파일을 선택해주세요.'); return; }
 
   const btn = document.getElementById('confirm-upload');
-  btn.disabled = true; btn.textContent = 'Loading…';
+  btn.disabled = true; btn.textContent = 'Uploading…';
 
   try {
-    // Read all files into ArrayBuffers
-    const fileData = await Promise.all([...input.files].map(async f => ({
-      name:     f.name,
-      data:     await f.arrayBuffer(),
-      mimeType: f.type || guessMime(f.name),
-    })));
-    fileData.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-
-    const first    = fileData[0];
+    const fileList = [...input.files].sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { numeric: true })
+    );
+    const first    = fileList[0];
+    const songId   = Date.now().toString();
     const fileType = detectType(first.name);
     const title    = document.getElementById('upload-title').value.trim()
                      || first.name.replace(/\.[^.]+$/, '');
 
+    // Upload each file to Supabase Storage
+    const uploadedFiles = [];
+    for (const file of fileList) {
+      const path = `${songId}/${file.name}`;
+      const ab   = await file.arrayBuffer();
+      await storage.upload(path, ab, file.type || guessMime(file.name));
+      uploadedFiles.push({ name: file.name, path, mimeType: file.type || guessMime(file.name) });
+    }
+
     const song = {
-      id:        Date.now().toString(),
-      title,
-      artist:    document.getElementById('upload-artist').value.trim(),
-      fileType,
-      files:     fileData,
-      createdAt: new Date().toISOString(),
+      id: songId, title,
+      artist:   document.getElementById('upload-artist').value.trim(),
+      fileType, files: uploadedFiles,
     };
-    await idb.put('songs', song);
-    songs.push(song);
+    await db.upsertSong(song);
+    song.createdAt = new Date().toISOString();
+    songs.unshift(song);
     renderSongs();
     emit('songs-changed', songs);
     closeModal();
   } catch (e) {
-    alert('업로드 실패: ' + e.message);
+    showError('업로드 실패: ' + e.message);
   } finally {
     btn.disabled = false; btn.textContent = 'Upload';
   }
@@ -138,10 +150,10 @@ function detectType(name) {
 }
 function guessMime(name) {
   const ext = name.split('.').pop().toLowerCase();
-  const map = { pdf:'application/pdf', jpg:'image/jpeg', jpeg:'image/jpeg',
-                png:'image/png', webp:'image/webp' };
-  return map[ext] || 'application/octet-stream';
+  return { pdf:'application/pdf', jpg:'image/jpeg', jpeg:'image/jpeg',
+           png:'image/png', webp:'image/webp' }[ext] || 'application/octet-stream';
 }
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+function showError(msg) { alert(msg); }
